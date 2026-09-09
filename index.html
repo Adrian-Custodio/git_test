@@ -760,13 +760,13 @@ herPhotoImg.addEventListener('error', () => {
 });
 herPhotoImg.src = HER_PHOTO_SRC;
 
-/* ---------- Screen 2 -> Screen 3 ---------- */
+/* ---------- Screen 2 to Screen 3 ---------- */
 document.getElementById('btnToQuizIntro').addEventListener('click', () => {
   playClickSound();
   showScreen('screen-quiz-intro');
 });
 
-/* ---------- Screen 3 -> Screen 4 ---------- */
+/* ---------- Screen 3 to Screen 4 ---------- */
 document.getElementById('btnStartQuiz').addEventListener('click', () => {
   playClickSound();
   currentQuestionIndex = 0;
@@ -830,7 +830,7 @@ function renderQuestion(index){
   container.appendChild(choicesWrap);
 }
 
-/* ---------- Handle an answer -> feedback modal ---------- */
+/* ---------- Handle an answer to feedback modal ---------- */
 function handleAnswer(question, chosenId){
   const isCorrect = chosenId === question.correctChoiceId;
   const modalIcon = document.getElementById('modalIcon');
@@ -877,7 +877,7 @@ function handleAnswer(question, chosenId){
   document.getElementById('modalOverlay').classList.add('active');
 }
 
-/* ---------- Modal "Next" -> next question or final page ---------- */
+/* ---------- Modal "Next" leads to next question or final page ---------- */
 document.getElementById('modalNextBtn').addEventListener('click', () => {
   playClickSound();
   stopAnswerSfx(); // cut off this question's clap/wrong sound before moving on
