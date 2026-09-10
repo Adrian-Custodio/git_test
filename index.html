@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Happy Birthday 💚</title>
+<title>Dear Allysa 💚</title>
 
 <!-- Google Fonts: chunky pixel-game font for headings/buttons everywhere except the
      final letter, which switches to a cursive pairing (Dancing Script + Caveat)
@@ -136,7 +136,12 @@
   .screen.active{ display:flex; }
 
   .particles-layer{
-    position:absolute; inset:0;
+    /* fixed, not absolute: the final screen is much taller than one viewport
+       (the letter scrolls), and an absolute layer sized to that whole tall
+       section made hearts spawn near its real bottom and only ever drift a
+       fixed 115vh — nowhere near the top. Pinning it to the viewport instead
+       means "bottom" and "top" always mean the screen's actual edges. */
+    position:fixed; inset:0;
     overflow:hidden;
     pointer-events:none;
     z-index:1;
@@ -367,7 +372,35 @@
   .photo-placeholder .ph-icon{ font-size:2.2rem; }
   .photo-frame img{ width:100%; height:100%; object-fit:cover; }
 
-  .greeting-name{ font-size: clamp(2.2rem, 8vw, 3.1rem); color: var(--sage-dark); }
+  /* Screen 2 goes full black for a beat, iPhone/"Hello" setup-screen style —
+     the name swells in from a small point with that same soft overshoot,
+     then everything else (photo, button) is styled to sit on the black too. */
+  #screen-greeting{ background:#000; }
+  #screen-greeting .photo-placeholder{ color: var(--sage-light); }
+  #screen-greeting .envelope-hint{ color:#fff; }
+  .greeting-name{
+    font-family:'Dancing Script', cursive;
+    font-weight:700;
+    font-size: clamp(3rem, 13vw, 4.6rem);
+    color:#ffffff;
+    line-height:1.15;
+    animation: appleHello 1.3s cubic-bezier(.2,.9,.32,1.4) both;
+  }
+  @keyframes appleHello{
+    0%{ opacity:0; transform: scale(.4); }
+    55%{ opacity:1; transform: scale(1.08); }
+    100%{ opacity:1; transform: scale(1); }
+  }
+
+  /* ===================== SCREEN 4.5: REVEAL TRANSITION ===================== */
+  #screen-reveal{ background:#000; }
+  .reveal-text{
+    font-family:'Dancing Script', cursive;
+    font-weight:700;
+    font-size: clamp(2.2rem, 9vw, 3.4rem);
+    color:#ffffff;
+    animation: appleHello 1.3s cubic-bezier(.2,.9,.32,1.4) both;
+  }
 
   /* ===================== SCREEN 3: QUIZ INTRO ===================== */
   .quiz-icon-image{
@@ -525,10 +558,24 @@
   #screen-final .screen-content{ gap:.75rem; }
 
   /* soft blurred color blobs drifting behind everything, for depth */
-  .bg-glow{ position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; }
+  /* fixed for the same reason as .particles-layer above — on the long,
+     scrolling letter an absolute glow only ever showed up right at the very
+     top or very bottom of that tall section, so most of the scroll looked
+     like plain flat background. Pinned to the viewport it stays visible
+     the whole time she's reading, on every screen. */
+  .bg-glow{ position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none; }
   .bg-glow .blob{ position:absolute; border-radius:50%; filter: blur(50px); opacity:.5; }
   .bg-glow .blob-1{ width:260px; height:260px; background: var(--sage); top:-70px; left:-70px; }
   .bg-glow .blob-2{ width:220px; height:220px; background: var(--blush); bottom:-50px; right:-60px; }
+  /* each earlier screen gets its own accent colors on that same blob layout,
+     so the ride feels like distinct little "scenes" instead of one repeated
+     backdrop — the final page keeps the sage/blush pairing set above */
+  .bg-glow.accent-envelope .blob-1{ background: var(--gold); }
+  .bg-glow.accent-envelope .blob-2{ background: var(--pink-strong); }
+  .bg-glow.accent-quiz-intro .blob-1{ background: var(--gold); }
+  .bg-glow.accent-quiz-intro .blob-2{ background: var(--sage-mid); }
+  .bg-glow.accent-quiz-question .blob-1{ background: var(--blush); }
+  .bg-glow.accent-quiz-question .blob-2{ background: var(--gold); }
 
   /* photo collage — four polaroids overlapping into one tight cluster,
      with a sticker at the spot where they all converge */
@@ -545,8 +592,44 @@
     border: 2px solid var(--ink);
     border-radius: 8px;
     box-shadow: 4px 4px 0 rgba(51,66,46,.35);
+    cursor: pointer;
+    transition: transform .15s ease;
   }
+  .polaroid:hover{ transform: scale(1.05) rotate(0deg); }
   .polaroid img{ width:100%; height:100%; object-fit:cover; border-radius:3px; display:block; }
+  /* while a polaroid is blown up into the full-screen preview (see the
+     photo-preview script below), hide the original so it isn't doubled up */
+  .polaroid.preview-source-hidden{ opacity:0; pointer-events:none; }
+
+  /* ===================== PHOTO PREVIEW (tap a polaroid to zoom it in) =====================
+     A backdrop dims the page and a clone of the tapped polaroid animates from
+     its exact spot up to a big centered preview; tapping it (or the backdrop)
+     animates it right back down to that same spot before it's removed. */
+  .preview-backdrop{
+    position:fixed; inset:0;
+    background: rgba(20,26,18,.72);
+    opacity:0;
+    transition: opacity .35s ease;
+    z-index:200;
+    cursor: pointer;
+  }
+  .preview-backdrop.show{ opacity:1; }
+  .preview-clone{
+    position:fixed;
+    z-index:201;
+    margin:0;
+    background: var(--white);
+    padding: 6px 6px 14px 6px;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: 6px 6px 0 rgba(51,66,46,.4);
+    cursor: pointer;
+    transition: left .45s cubic-bezier(.22,.7,.3,1), top .45s cubic-bezier(.22,.7,.3,1),
+                width .45s cubic-bezier(.22,.7,.3,1), height .45s cubic-bezier(.22,.7,.3,1),
+                transform .45s cubic-bezier(.22,.7,.3,1);
+    animation: none !important;
+  }
+  .preview-clone img{ width:100%; height:100%; object-fit:cover; border-radius:5px; display:block; }
 
   /* one shared entrance animation — each polaroid just sets its own --tilt
      angle and animation-delay below, so it fades/scales in and settles at
@@ -680,6 +763,7 @@
        SCREEN 1 — LANDING ENVELOPE
        ======================================================= -->
   <section class="screen active" id="screen-envelope">
+    <div class="bg-glow accent-envelope"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <div class="envelope-wrap" id="envelopeWrap">
         <div class="envelope" id="envelope">
@@ -731,10 +815,11 @@
        SCREEN 3 — QUIZ INTRO
        ======================================================= -->
   <section class="screen" id="screen-quiz-intro">
+    <div class="bg-glow accent-quiz-intro"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <!-- (a) SWAP/EDIT: the photo shown above the quiz-intro title -->
       <img class="quiz-icon-image fade-in" src="bai.jpeg" alt="Bai">
-      <h2 class="quiz-intro-title fade-in delay-1">Click mo start! Basahon mong maray! HAHAHAH</h2>
+      <h2 class="quiz-intro-title fade-in delay-1">Volume up! Basahon mong maray! HAHAHAH</h2>
       <div class="fade-in delay-2">
         <button class="btn-primary" id="btnStartQuiz">Start</button>
       </div>
@@ -745,9 +830,20 @@
        SCREEN 4 — QUIZ QUESTION (rendered dynamically by JS)
        ======================================================= -->
   <section class="screen" id="screen-quiz-question">
+    <div class="bg-glow accent-quiz-question"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content" id="quizQuestionContent">
       <!-- filled in by renderQuestion() -->
     </div>
+  </section>
+
+  <!-- =======================================================
+       SCREEN 4.5 — REVEAL TRANSITION
+       A brief black beat of suspense between the last quiz question and the
+       letter, same "Apple hello" swell as the greeting screen — auto-advances
+       to the final page on its own after playing.
+       ======================================================= -->
+  <section class="screen" id="screen-reveal">
+    <h1 class="reveal-text">One last thing…</h1>
   </section>
 
   <!-- =======================================================
@@ -1189,9 +1285,14 @@ document.getElementById('modalNextBtn').addEventListener('click', () => {
   if (currentQuestionIndex < questions.length){
     renderQuestion(currentQuestionIndex);
   } else {
+    // a brief black "one last thing…" beat (same swell as the greeting)
+    // before the letter itself appears, instead of cutting straight to it
     switchToFinalMusic();
-    showScreen('screen-final');
-    createParticles(document.getElementById('particlesFinal'));
+    showScreen('screen-reveal');
+    setTimeout(() => {
+      showScreen('screen-final');
+      createParticles(document.getElementById('particlesFinal'));
+    }, 1900);
   }
 });
 
@@ -1314,6 +1415,84 @@ function createSparkles(container, count){
   }
 }
 createSparkles(document.getElementById('sparkleLayer'));
+
+/* =====================================================================
+   PHOTO PREVIEW — tap any polaroid on the final page to blow it up into
+   a big centered preview that grows right out of its own spot; tap it
+   (or the dimmed backdrop) again and it shrinks back down into that
+   exact same spot instead of just fading away.
+   ===================================================================== */
+(function setupPolaroidPreview(){
+  let activeSource = null; // the real .polaroid currently hidden behind its clone
+
+  function openPreview(source){
+    if (activeSource) return; // one at a time
+    activeSource = source;
+
+    const rect = source.getBoundingClientRect();
+    const backdrop = document.createElement('div');
+    backdrop.className = 'preview-backdrop';
+
+    const clone = source.cloneNode(true);
+    clone.className = 'preview-clone';
+    clone.style.animation = 'none';
+    clone.style.left = rect.left + 'px';
+    clone.style.top = rect.top + 'px';
+    clone.style.width = rect.width + 'px';
+    clone.style.height = rect.height + 'px';
+    clone.style.transform = 'rotate(0deg)';
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(clone);
+    source.classList.add('preview-source-hidden');
+
+    // force layout so the browser registers the start position before we
+    // animate to the enlarged one, then grow it to a big centered preview
+    void clone.offsetWidth;
+
+    const targetW = Math.min(window.innerWidth * 0.82, 380);
+    const targetH = Math.min(targetW * (rect.height / rect.width), window.innerHeight * 0.72);
+    const finalW = targetH === window.innerHeight * 0.72 ? targetH * (rect.width / rect.height) : targetW;
+    const targetLeft = (window.innerWidth - finalW) / 2;
+    const targetTop = (window.innerHeight - targetH) / 2;
+
+    requestAnimationFrame(() => {
+      backdrop.classList.add('show');
+      clone.style.left = targetLeft + 'px';
+      clone.style.top = targetTop + 'px';
+      clone.style.width = finalW + 'px';
+      clone.style.height = targetH + 'px';
+    });
+
+    const closeHandler = () => closePreview(source, clone, backdrop, rect);
+    clone.addEventListener('click', closeHandler);
+    backdrop.addEventListener('click', closeHandler);
+  }
+
+  function closePreview(source, clone, backdrop, rect){
+    backdrop.classList.remove('show');
+    clone.style.left = rect.left + 'px';
+    clone.style.top = rect.top + 'px';
+    clone.style.width = rect.width + 'px';
+    clone.style.height = rect.height + 'px';
+
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clone.remove();
+      backdrop.remove();
+      source.classList.remove('preview-source-hidden');
+      activeSource = null;
+    };
+    clone.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, 550); // safety net in case transitionend doesn't fire
+  }
+
+  document.querySelectorAll('.final-collage .polaroid').forEach(polaroid => {
+    polaroid.addEventListener('click', () => openPreview(polaroid));
+  });
+})();
 </script>
 
 </body>
