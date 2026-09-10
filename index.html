@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Happy Birthday 💚</title>
 
-<!-- Google Fonts: cursive/script for headings + clean sans-serif for body -->
+<!-- Google Fonts: chunky pixel-game font for headings/buttons everywhere except the
+     final letter, which switches to a cursive pairing (Dancing Script + Caveat)
+     so the whole page reads like one handwritten note; Quicksand for other body copy -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Dancing+Script:wght@600;700&family=Caveat:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 
 <style>
   /* ===================== DESIGN TOKENS ===================== */
@@ -20,36 +22,108 @@
     --cream:#fffaf0;
     --gold:#e6b657;
     --blush:#f3c9c6;
+    --pink-strong:#e78fa0;
+    --ink:#33422e;
     --text-dark:#3f4a3d;
     --white:#ffffff;
     --shadow-soft: 0 10px 30px rgba(63,74,61,0.15);
   }
 
-  *{ box-sizing:border-box; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{
     margin:0; padding:0; min-height:100%;
     font-family:'Quicksand', sans-serif;
     color:var(--text-dark);
-    background: linear-gradient(160deg, var(--sage-light) 0%, var(--cream) 60%, #fff 100%);
+    /* soft pixel-sky: sage green fading into a blush-pink horizon, like the
+       reference dusk scene, but kept in her favorite green as the lead color */
+    background: linear-gradient(180deg, #eaf6e3 0%, #dcefd2 32%, #f3ddd6 72%, #f3c9c6 100%);
     overflow-x:hidden;
+    touch-action: pan-y; /* this is a tap-through card, not a pinch-zoom page */
   }
-  h1,h2,h3, .script{
+  h1,h2,h3{
+    font-family:'Pixelify Sans', sans-serif;
+    font-weight:700;
+    margin:0;
+  }
+  .script{
     font-family:'Dancing Script', cursive;
     font-weight:700;
     margin:0;
   }
-  button{ font-family:inherit; border:none; cursor:pointer; background:none; }
+  button{ font-family:'Pixelify Sans', sans-serif; border:none; cursor:pointer; background:none; touch-action:manipulation; }
   img{ max-width:100%; display:block; }
+
+  /* ===================== FIXED PIXEL-ART SCENE (guide reference) =====================
+     Lives behind every screen: drifting clouds + a jagged 8-bit hill skyline. */
+  .pixel-scene{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+
+  .pixel-cloud{
+    position:absolute;
+    background: var(--white);
+    border-radius: 50% / 60%;
+    opacity:.9;
+    animation-name: driftX;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  .pixel-cloud::before, .pixel-cloud::after{
+    content:""; position:absolute; background:inherit; border-radius:50%;
+  }
+  @keyframes driftX{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(26px); } }
+
+  .cloud-a{ width:120px; height:46px; top:10%; left:6%; animation-duration:30s; }
+  .cloud-a::before{ width:60px; height:60px; top:-30px; left:14px; }
+  .cloud-a::after{ width:50px; height:44px; top:-18px; left:58px; }
+
+  .cloud-b{ width:90px; height:36px; top:22%; right:8%; animation-duration:24s; animation-delay:-6s; }
+  .cloud-b::before{ width:46px; height:46px; top:-22px; left:10px; }
+  .cloud-b::after{ width:38px; height:34px; top:-14px; left:44px; }
+
+  .cloud-c{ width:100px; height:38px; top:15%; left:50%; background: var(--blush); animation-duration:34s; animation-delay:-14s; }
+  .cloud-c::before{ width:50px; height:50px; top:-24px; left:12px; }
+  .cloud-c::after{ width:42px; height:38px; top:-16px; left:48px; }
+
+  .pixel-hill{ position:absolute; left:0; right:0; bottom:0; background: var(--sage-mid); }
+  .hill-back{
+    height:24vh; opacity:.55;
+    clip-path: polygon(0% 100%,0% 58%,8% 58%,8% 42%,16% 42%,16% 60%,24% 60%,24% 38%,32% 38%,32% 52%,40% 52%,40% 32%,48% 32%,48% 46%,56% 46%,56% 28%,64% 28%,64% 44%,72% 44%,72% 56%,80% 56%,80% 34%,88% 34%,88% 50%,96% 50%,96% 40%,100% 40%,100% 100%);
+  }
+  .hill-front{
+    height:14vh; background: var(--sage-dark);
+    clip-path: polygon(0% 100%,0% 45%,7% 45%,7% 65%,14% 65%,14% 35%,21% 35%,21% 55%,28% 55%,28% 30%,35% 30%,35% 50%,42% 50%,42% 25%,49% 25%,49% 48%,56% 48%,56% 32%,63% 32%,63% 55%,70% 55%,70% 28%,77% 28%,77% 46%,84% 46%,84% 60%,91% 60%,91% 38%,100% 38%,100% 100%);
+  }
+
+  /* ===================== AMBIENT SPARKLE LAYER (the "little sparkles" from the video) ===================== */
+  .sparkle-layer{ position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+  .sparkle{
+    position:absolute;
+    line-height:1;
+    opacity:0;
+    animation-name: twinkle;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: opacity, transform;
+  }
+  .sparkle.gold{ color:var(--gold); text-shadow:0 0 6px rgba(230,182,87,.7); }
+  .sparkle.pink{ color:var(--pink-strong); text-shadow:0 0 6px rgba(231,143,160,.7); }
+  .sparkle.white{ color:#ffffff; text-shadow:0 0 6px rgba(255,255,255,.85); }
+  @keyframes twinkle{
+    0%,100%{ opacity:0; transform: scale(.4) rotate(0deg); }
+    50%{ opacity:1; transform: scale(1) rotate(20deg); }
+  }
 
   /* ===================== APP SHELL / SCREENS ===================== */
   #app{
     position:relative;
+    z-index:2;
     min-height:100vh;
+    min-height:100dvh; /* real visible height on phones, so nothing hides under the address bar */
     width:100%;
   }
   .screen{
     position:relative;
     min-height:100vh;
+    min-height:100dvh;
     width:100%;
     display:none;
     flex-direction:column;
@@ -103,51 +177,74 @@
     to{ opacity:1; transform: translateY(0) scale(1); }
   }
 
-  /* ===================== BUTTONS (shared) ===================== */
+  /* ===================== BUTTONS (shared, chunky pixel-game style) ===================== */
   .btn-primary{
     display:inline-flex; align-items:center; gap:.5rem;
-    padding: .9rem 2rem;
-    font-size:1.05rem; font-weight:700;
+    padding: .95rem 2rem;
+    font-size:1rem; font-weight:700;
     color:var(--white);
     background: linear-gradient(135deg, var(--sage-mid), var(--sage-dark));
+    border: 3px solid var(--ink);
     border-radius: 999px;
-    box-shadow: var(--shadow-soft);
-    transition: transform .2s ease, box-shadow .2s ease;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease;
   }
-  .btn-primary:hover{ transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 34px rgba(63,74,61,.22); }
-  .btn-primary:active{ transform: translateY(0) scale(.97); }
+  .btn-primary:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
+  .btn-primary:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
 
   .btn-ghost{
     padding:.6rem 1.4rem;
-    font-size:.95rem; font-weight:600;
+    font-size:.9rem; font-weight:700;
     color:var(--sage-dark);
-    background: transparent;
-    border: 2px solid var(--sage-mid);
+    background: var(--cream);
+    border: 3px solid var(--ink);
     border-radius:999px;
-    transition: all .2s ease;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: all .15s ease;
   }
-  .btn-ghost:hover{ background:var(--sage-mid); color:var(--white); }
+  .btn-ghost:hover{ background:var(--sage-mid); color:var(--white); transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+  .btn-ghost:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
 
   .sound-toggle{
     position:fixed; top:1rem; right:1rem;
-    width:44px; height:44px;
-    border-radius:50%;
-    background: var(--white);
-    box-shadow: var(--shadow-soft);
+    width:46px; height:46px;
+    border-radius:14px;
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
     font-size:1.2rem;
     display:flex; align-items:center; justify-content:center;
     z-index:100;
-    transition: transform .15s ease;
+    transition: transform .15s ease, box-shadow .15s ease;
   }
-  .sound-toggle:active{ transform: scale(.9); }
+  .sound-toggle:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+
+  .scroll-hint{
+    position:fixed; left:50%; bottom:14px;
+    transform:translateX(-50%);
+    display:none;
+    align-items:center; gap:.3rem;
+    font-family:'Pixelify Sans', sans-serif; font-size:.75rem; font-weight:700;
+    color:var(--ink);
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding:.4rem .8rem;
+    box-shadow: 3px 3px 0 var(--ink);
+    z-index:60;
+    animation: bounceHint 1.4s ease-in-out infinite;
+    pointer-events:none;
+  }
+  .scroll-hint.show{ display:flex; }
+  @keyframes bounceHint{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(5px); } }
 
   /* ===================== SCREEN 1: ENVELOPE ===================== */
-  .envelope-wrap{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; cursor:pointer; user-select:none; }
+  .envelope-wrap{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; cursor:pointer; user-select:none; touch-action:manipulation; }
   .envelope{
     position:relative;
     width: min(260px, 70vw);
     aspect-ratio: 3/2;
-    filter: drop-shadow(0 14px 24px rgba(63,74,61,.22));
+    filter: drop-shadow(0 10px 0 rgba(51,66,46,.18));
     animation: bob 3s ease-in-out infinite;
   }
   @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
@@ -155,16 +252,18 @@
   .envelope-body{
     position:absolute; inset:0;
     background: var(--cream);
-    border-radius: 14px;
-    border: 2px solid var(--sage);
+    border-radius: 10px;
+    border: 3px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
   }
   .envelope-card{
     position:absolute;
     left:50%; bottom:8%;
     width:78%; height:66%;
     background: var(--white);
-    border-radius:10px;
-    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    border: 2px solid var(--ink);
+    border-radius:8px;
+    box-shadow: 3px 3px 0 rgba(51,66,46,.25);
     transform: translate(-50%, 20%) scale(.82);
     opacity:0;
     transition: transform .7s cubic-bezier(.34,1.56,.64,1) .35s, opacity .5s ease .35s;
@@ -178,23 +277,74 @@
     clip-path: polygon(0 0, 100% 0, 50% 100%);
     border-radius: 14px 14px 0 0;
     transform-origin: top center;
-    transition: transform .8s cubic-bezier(.5,-0.4,.4,1.35);
+    transition: transform .7s cubic-bezier(.22,.61,.36,1) .18s; /* waits a beat for the seal to crack first */
     z-index:3;
   }
-  .envelope-seal{
-    position:absolute; top:36%; left:50%;
-    transform: translate(-50%,-50%);
-    font-size:1.9rem;
+
+  /* ribbon: a little bow sits across the flap until tapped, then it unties —
+     loops and tails swing loose and fade, then the two ribbon ends slide
+     apart off the sides, right before the flap itself swings open */
+  .ribbon{
+    position:absolute; top:38%; left:0; right:0; height:18px;
+    transform: translateY(-50%);
     z-index:4;
-    animation: pulse 2s ease-in-out infinite;
   }
-  @keyframes pulse{ 0%,100%{ transform:translate(-50%,-50%) scale(1); } 50%{ transform:translate(-50%,-50%) scale(1.12); } }
+  .ribbon-strip{
+    position:absolute; top:50%; width:50%; height:13px;
+    transform: translateY(-50%);
+    background: linear-gradient(180deg, #f2a4b4, var(--pink-strong) 55%, #cf7b8d 100%);
+    border: 2px solid var(--ink);
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,.2);
+    transition: transform .55s cubic-bezier(.33,.9,.4,1) .18s, opacity .4s ease .18s;
+  }
+  .ribbon-strip-l{ left:0; border-radius: 5px 2px 2px 5px; }
+  .ribbon-strip-r{ right:0; border-radius: 2px 5px 5px 2px; }
+
+  .ribbon-tail{
+    position:absolute; top:50%; left:50%;
+    width:9px; height:20px;
+    background: linear-gradient(180deg, #f2a4b4, var(--pink-strong) 60%, #cf7b8d 100%);
+    border: 2px solid var(--ink);
+    clip-path: polygon(0 0, 100% 0, 100% 76%, 50% 100%, 0 76%); /* notched ribbon-tail point */
+    transition: transform .45s cubic-bezier(.33,.9,.4,1), opacity .35s ease;
+  }
+  .ribbon-tail-l{ transform: translate(calc(-50% - 6px), -14%) rotate(-14deg); transform-origin: top center; }
+  .ribbon-tail-r{ transform: translate(calc(-50% + 6px), -14%) rotate(14deg); transform-origin: top center; }
+
+  .ribbon-loop{
+    position:absolute; top:50%; left:50%;
+    width:15px; height:20px;
+    background: linear-gradient(160deg, #f2a4b4, var(--pink-strong) 60%, #cf7b8d 100%);
+    border: 2px solid var(--ink);
+    border-radius: 60% 60% 55% 55% / 65% 65% 60% 60%;
+    transition: transform .45s cubic-bezier(.33,.9,.4,1), opacity .35s ease;
+  }
+  .ribbon-loop-l{ transform: translate(-92%, -58%) rotate(-24deg); }
+  .ribbon-loop-r{ transform: translate(-8%, -58%) rotate(24deg); }
+
+  .ribbon-knot{
+    position:absolute; top:50%; left:50%;
+    width:11px; height:10px;
+    transform: translate(-50%,-50%);
+    background: linear-gradient(160deg, #e78fa0, #b95f74);
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    transition: transform .4s ease, opacity .35s ease;
+  }
 
   .envelope.open .envelope-flap{ transform: rotateX(180deg); }
-  .envelope.open .envelope-card{ transform: translate(-50%, -6%) scale(1); opacity:1; }
-  .envelope.open .envelope-seal{ opacity:0; transition: opacity .2s ease; }
+  .envelope.open .envelope-card{ transform: translate(-50%, -6%) scale(1); opacity:1; transition: transform .6s cubic-bezier(.22,.61,.36,1) .3s, opacity .4s ease .3s; }
+  /* the bow loosens first... */
+  .envelope.open .ribbon-loop-l{ transform: translate(-140%, -85%) rotate(-70deg) scale(.5); opacity:0; }
+  .envelope.open .ribbon-loop-r{ transform: translate(40%, -85%) rotate(70deg) scale(.5); opacity:0; }
+  .envelope.open .ribbon-tail-l{ transform: translate(calc(-50% - 18px), 45%) rotate(-45deg); opacity:0; }
+  .envelope.open .ribbon-tail-r{ transform: translate(calc(-50% + 18px), 45%) rotate(45deg); opacity:0; }
+  .envelope.open .ribbon-knot{ transform: translate(-50%,-50%) scale(.3); opacity:0; }
+  /* ...then the two ribbon ends slide apart off the sides */
+  .envelope.open .ribbon-strip-l{ transform: translateY(-50%) translateX(-120%); opacity:0; }
+  .envelope.open .ribbon-strip-r{ transform: translateY(-50%) translateX(120%); opacity:0; }
 
-  .envelope-hint{ font-size:.95rem; color: var(--sage-dark); font-weight:600; letter-spacing:.02em; }
+  .envelope-hint{ font-family:'Pixelify Sans', sans-serif; font-size:.85rem; color: var(--sage-dark); font-weight:700; letter-spacing:.03em; }
 
   /* ===================== SCREEN 2: CARD / GREETING ===================== */
   .photo-frame{
@@ -202,8 +352,8 @@
     height: clamp(220px, 70vw, 300px);
     border-radius: 50%;
     background: var(--white);
-    border: 6px solid var(--white);
-    box-shadow: var(--shadow-soft);
+    border: 6px solid var(--cream);
+    box-shadow: 0 0 0 4px var(--ink), 0 0 0 8px var(--pink-strong), var(--shadow-soft);
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
     position:relative;
@@ -217,20 +367,19 @@
   .photo-placeholder .ph-icon{ font-size:2.2rem; }
   .photo-frame img{ width:100%; height:100%; object-fit:cover; }
 
-  .greeting-name{ font-size: clamp(2.4rem, 9vw, 3.4rem); color: var(--sage-dark); }
+  .greeting-name{ font-size: clamp(2.2rem, 8vw, 3.1rem); color: var(--sage-dark); }
 
   /* ===================== SCREEN 3: QUIZ INTRO ===================== */
   .quiz-icon-image{
-    width: 110px; height:110px;
+    width: clamp(160px, 46vw, 210px);
+    aspect-ratio: 1/1;
     object-fit: cover;
-    border-radius: 22px;
-    box-shadow: var(--shadow-soft);
-    border: 4px solid var(--white);
+    border-radius: 18px;
+    border: 3px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
   }
   .quiz-intro-title{
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    font-size: clamp(1.5rem, 5.6vw, 2.05rem);
     color: var(--sage-dark);
   }
 
@@ -239,15 +388,15 @@
     font-size:.85rem; font-weight:700; letter-spacing:.06em;
     text-transform:uppercase; color:var(--sage-dark);
   }
-  .question-prompt{ font-size: clamp(1.5rem, 6vw, 2rem); color: var(--sage-dark); }
+  .question-prompt{ font-size: clamp(1.4rem, 5.6vw, 1.9rem); color: var(--sage-dark); }
 
   .question-image{
     width: min(230px, 60vw);
     aspect-ratio: 3/4;
     object-fit: cover;
-    border-radius: 20px;
-    box-shadow: var(--shadow-soft);
-    border: 4px solid var(--white);
+    border-radius: 16px;
+    border: 3px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
   }
 
   .choices{
@@ -258,43 +407,46 @@
   /* Cute text-only choice button (used when a choice has no image, e.g. Q1) */
   .choice-btn{
     padding: 1rem 1.9rem;
-    font-size:1.1rem; font-weight:700;
+    font-size:1rem; font-weight:700;
     color:var(--white);
+    border: 3px solid var(--ink);
     border-radius: 999px;
     background: linear-gradient(135deg, var(--sage-mid), var(--sage-dark));
-    box-shadow: var(--shadow-soft);
-    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
     min-width: 130px;
   }
   .choice-btn:nth-child(2){
-    background: linear-gradient(135deg, var(--gold), #d99f3a);
+    background: linear-gradient(135deg, var(--pink-strong), #d97f92);
   }
-  .choice-btn:hover{ transform: translateY(-4px) scale(1.05); box-shadow: 0 14px 30px rgba(63,74,61,.25); }
-  .choice-btn:active{ transform: translateY(-1px) scale(.96); }
+  .choice-btn:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
+  .choice-btn:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
 
   /* Picture-based choice button (for future questions with per-choice images) */
   .choice-picture-btn{
     display:flex; flex-direction:column; align-items:center; gap:.6rem;
     padding: .8rem;
     background: var(--white);
-    border-radius: 18px;
-    box-shadow: var(--shadow-soft);
-    transition: transform .18s ease, box-shadow .18s ease;
-    width: 140px;
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease;
+    width: clamp(128px, 41vw, 175px);
   }
   .choice-picture-btn img{
     width: 100%; aspect-ratio: 1/1;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 10px;
+    border: 2px solid var(--ink);
   }
   .choice-picture-btn .choice-label{ font-weight:700; color:var(--sage-dark); }
-  .choice-picture-btn:hover{ transform: translateY(-5px) scale(1.04); box-shadow: 0 14px 30px rgba(63,74,61,.25); }
-  .choice-picture-btn:active{ transform: translateY(-1px) scale(.97); }
+  .choice-picture-btn:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
+  .choice-picture-btn:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
 
   /* ===================== MODAL (feedback popup) ===================== */
   .modal-overlay{
     position:fixed; inset:0;
-    background: rgba(63,74,61,.45);
+    background: rgba(51,66,46,.5);
     display:none;
     align-items:center; justify-content:center;
     padding: 1.5rem;
@@ -302,32 +454,75 @@
   }
   .modal-overlay.active{ display:flex; }
   .modal-box{
+    position:relative;
     background: var(--white);
-    border-radius: 20px;
+    border: 3px solid var(--ink);
+    border-radius: 18px;
     max-width: 380px; width:100%;
     padding: 2rem 1.75rem;
     text-align:center;
-    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    box-shadow: 6px 6px 0 var(--ink);
     display:flex; flex-direction:column; align-items:center; gap:1rem;
     animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
   }
+  .modal-box::before, .modal-box::after{
+    content:""; position:absolute; width:10px; height:10px;
+    background: var(--pink-strong); border: 2px solid var(--ink);
+  }
+  .modal-box::before{ top:-6px; left:-6px; }
+  .modal-box::after{ bottom:-6px; right:-6px; }
   @keyframes popIn{ from{ opacity:0; transform: scale(.85); } to{ opacity:1; transform: scale(1); } }
   .modal-icon{ font-size:2.6rem; }
   /* Used instead of modal-icon on "trick" questions (see revealImage in the
      questions data below) — a photo pops up out of nowhere as the reveal. */
   .modal-reveal-image{
-    width: 140px;
+    width: clamp(180px, 58vw, 230px);
     aspect-ratio: 3/4;
     object-fit: cover;
-    border-radius: 16px;
-    box-shadow: var(--shadow-soft);
-    border: 4px solid var(--white);
+    border-radius: 14px;
+    border: 3px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
     animation: popIn .4s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .modal-title{ font-size:1.8rem; color:var(--sage-dark); }
+  .modal-title{ font-size:1.6rem; color:var(--sage-dark); }
   .modal-text{ font-size:.98rem; line-height:1.55; }
 
+  /* ===================== ANSWER REACTIONS =====================
+     Confetti on a correct answer, a burst of eye-rolling emoji on a wrong
+     one — both fired from the same full-screen layer, see launchConfetti()
+     and launchEmojiBurst() in the script. */
+  .reaction-layer{ position:fixed; inset:0; z-index:70; pointer-events:none; overflow:hidden; }
+  .confetti-piece{
+    position:absolute; top:-12px;
+    opacity:0;
+    animation-name: confettiFall;
+    animation-timing-function: cubic-bezier(.3,.6,.7,1);
+    animation-fill-mode: forwards;
+  }
+  @keyframes confettiFall{
+    0%{ opacity:1; transform: translateY(0) rotate(0deg); }
+    100%{ opacity:.95; transform: translateY(105vh) rotate(var(--spin)); }
+  }
+  .emoji-pop{
+    position:absolute;
+    top:38%; left:50%;
+    opacity:0;
+    line-height:1;
+    animation-name: emojiPop;
+    animation-timing-function: cubic-bezier(.3,.9,.4,1);
+    animation-fill-mode: forwards;
+  }
+  @keyframes emojiPop{
+    0%{ opacity:0; transform: translate(-50%,-50%) scale(.3) rotate(0deg); }
+    35%{ opacity:1; transform: translate(calc(-50% + var(--dx)*.4), calc(-50% + var(--dy)*.4)) scale(1.15) rotate(var(--rot)); }
+    100%{ opacity:0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 30px)) scale(.9) rotate(var(--rot)); }
+  }
+
   /* ===================== SCREEN 5: FINAL PAGE ===================== */
+  /* the letter is the longest screen on a phone — trim its own padding/gaps
+     a bit tighter than the other screens so more of it fits before scrolling */
+  #screen-final{ padding-top:1.1rem; padding-bottom:1.1rem; }
+  #screen-final .screen-content{ gap:.75rem; }
 
   /* soft blurred color blobs drifting behind everything, for depth */
   .bg-glow{ position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; }
@@ -339,16 +534,17 @@
      with a sticker at the spot where they all converge */
   .final-collage{
     position:relative;
-    width: min(240px, 72vw);
-    height: 220px;
-    margin-bottom: .5rem;
+    width: min(195px, 58vw);
+    height: 176px;
+    margin-bottom: .25rem;
   }
   .polaroid{
     position:absolute;
     background: var(--white);
     padding: 6px 6px 14px 6px;
+    border: 2px solid var(--ink);
     border-radius: 8px;
-    box-shadow: 0 14px 30px rgba(63,74,61,.28);
+    box-shadow: 4px 4px 0 rgba(51,66,46,.35);
   }
   .polaroid img{ width:100%; height:100%; object-fit:cover; border-radius:3px; display:block; }
 
@@ -362,36 +558,36 @@
   .polaroid-1{ /* group1.jpeg — wide base photo, sits low so it peeks out
                   as a strip beneath the other three instead of vanishing */
     --tilt: 3deg;
-    width:150px; height:112px;
-    left: 40px; top: 100px;
+    width:120px; height:90px;
+    left: 32px; top: 80px;
     z-index:1;
     animation: fadeInTilt .8s ease .1s both;
   }
   .polaroid-2{ /* ali2.png — main portrait, front and center-top */
     --tilt: -6deg;
-    width:104px; height:138px;
-    left: 68px; top: 0;
+    width:83px; height:110px;
+    left: 54px; top: 0;
     z-index:4;
     animation: fadeInTilt .8s ease .25s both;
   }
   .polaroid-3{ /* ali3.png — accent, upper-left */
     --tilt: 9deg;
-    width:74px; height:122px;
-    left: 0; top: 40px;
+    width:59px; height:98px;
+    left: 0; top: 32px;
     z-index:2;
     animation: fadeInTilt .8s ease .4s both;
   }
   .polaroid-4{ /* ali4.png — accent, upper-right */
     --tilt: -11deg;
-    width:72px; height:119px;
-    right: 0; top: 34px;
+    width:58px; height:95px;
+    right: 0; top: 27px;
     z-index:3;
     animation: fadeInTilt .8s ease .55s both;
   }
   .collage-sticker{
     position:absolute;
     left:52%; top:54%;
-    font-size:1.8rem;
+    font-size:1.5rem;
     z-index:5;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,.18));
     animation: popSticker .5s cubic-bezier(.34,1.56,.64,1) .75s both;
@@ -401,23 +597,59 @@
     to  { opacity:1; transform: translate(-50%,-50%) rotate(-10deg) scale(1); }
   }
 
-  .final-title{ font-size: clamp(2.2rem, 8vw, 3rem); color: var(--sage-dark); }
-
-  .message-card{
-    background: rgba(255,255,255,.6);
-    border: 1px solid rgba(184,212,174,.55);
-    border-radius: 20px;
-    padding: 1.25rem 1.4rem;
-    box-shadow: var(--shadow-soft);
+  /* the letter switches out of the site's pixel-game heading font for a
+     cursive pairing — Dancing Script for the big heading, Caveat (a more
+     legible handwriting face) for the body below, so the whole card reads
+     as one handwritten note instead of clashing with the game-y quiz screens */
+  .final-title{
+    font-family:'Dancing Script', cursive;
+    font-size: clamp(2.4rem, 9vw, 3.4rem);
+    color: var(--sage-dark);
   }
+
+  /* solid warm "letter paper" card — opaque instead of the washed-out
+     translucent white it used to be, so it actually reads as paper against
+     the busy sky behind it, plus the same pixel corner accents as the modal */
+  .message-card{
+    position:relative;
+    background: linear-gradient(165deg, #ffffff 0%, var(--cream) 100%);
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    padding: 1.5rem 1.4rem 1.25rem;
+    box-shadow: 5px 5px 0 var(--ink);
+    /* a slow warm breathing glow — the letter stays a little "alive" on its own,
+       instead of just sitting there once its entrance fade-in finishes */
+    animation: letterGlow 3.4s ease-in-out infinite;
+  }
+  @keyframes letterGlow{
+    0%,100%{ box-shadow: 5px 5px 0 var(--ink); }
+    50%{ box-shadow: 5px 5px 0 var(--ink), 0 0 24px rgba(230,182,87,.5); }
+  }
+  .message-card::before, .message-card::after{
+    content:""; position:absolute; width:10px; height:10px;
+    background: var(--pink-strong); border: 2px solid var(--ink);
+  }
+  .message-card::before{ top:-6px; left:-6px; }
+  .message-card::after{ bottom:-6px; right:-6px; }
   .final-message{
-    font-size:1.05rem; line-height:1.7;
+    font-family:'Caveat', cursive;
+    font-weight:600;
+    font-size:1.3rem; line-height:1.4;
     max-width: 380px;
   }
-  .final-message p{ margin:0 0 .9rem 0; }
+  .final-message p{ margin:0 0 .5rem 0; }
   .final-message p:last-child{ margin-bottom:0; }
 
-  .sig-divider{ color: var(--gold); letter-spacing:.3em; opacity:.8; margin-top:.25rem; }
+  /* signed at the bottom of the letter itself, separated by a soft dashed rule */
+  .letter-signoff{
+    margin-top: .6rem;
+    padding-top: .6rem;
+    border-top: 2px dashed var(--sage);
+    text-align: center;
+  }
+  .letter-signoff .sig-name{ font-size:1.9rem; color:var(--sage-dark); text-align:right; }
+
+  .sig-divider{ font-family:'Caveat', cursive; font-size:1.2rem; color: var(--sage-dark); opacity:.75; margin-top:.25rem; }
 
   @media (min-width: 640px){
     .screen{ padding: 3rem 2rem; }
@@ -425,6 +657,22 @@
 </style>
 </head>
 <body>
+
+<!-- =======================================================
+     FIXED PIXEL-ART SCENE — guide-inspired background, sits behind
+     every screen: drifting clouds + jagged 8-bit hill skyline.
+     ======================================================= -->
+<div class="pixel-scene" aria-hidden="true">
+  <div class="pixel-cloud cloud-a"></div>
+  <div class="pixel-cloud cloud-b"></div>
+  <div class="pixel-cloud cloud-c"></div>
+  <div class="pixel-hill hill-back"></div>
+  <div class="pixel-hill hill-front"></div>
+</div>
+
+<!-- Ambient twinkling sparkles (the little sparkle effect from the guide video) —
+     always on, on top of the pixel scene, behind the actual screen content. -->
+<div class="sparkle-layer" id="sparkleLayer" aria-hidden="true"></div>
 
 <div id="app">
 
@@ -438,7 +686,17 @@
           <div class="envelope-body"></div>
           <div class="envelope-card">💌</div>
           <div class="envelope-flap"></div>
-          <div class="envelope-seal">💚</div>
+          <!-- ribbon: a little bow sits across the flap, unties and slides
+               away the moment she taps to open it -->
+          <div class="ribbon" id="ribbon">
+            <span class="ribbon-strip ribbon-strip-l"></span>
+            <span class="ribbon-strip ribbon-strip-r"></span>
+            <span class="ribbon-tail ribbon-tail-l"></span>
+            <span class="ribbon-tail ribbon-tail-r"></span>
+            <span class="ribbon-loop ribbon-loop-l"></span>
+            <span class="ribbon-loop ribbon-loop-r"></span>
+            <span class="ribbon-knot"></span>
+          </div>
         </div>
         <p class="envelope-hint">tap to open</p>
       </div>
@@ -476,7 +734,7 @@
     <div class="screen-content">
       <!-- (a) SWAP/EDIT: the photo shown above the quiz-intro title -->
       <img class="quiz-icon-image fade-in" src="bai.jpeg" alt="Bai">
-      <h2 class="quiz-intro-title fade-in delay-1">Quiz about yourself HAHAHA</h2>
+      <h2 class="quiz-intro-title fade-in delay-1">Click mo start! Basahon mong maray! HAHAHAH</h2>
       <div class="fade-in delay-2">
         <button class="btn-primary" id="btnStartQuiz">Start</button>
       </div>
@@ -515,15 +773,23 @@
       <!-- (d) EDIT THE FINAL BIRTHDAY MESSAGE if you ever want to change the wording -->
       <div class="message-card fade-in delay-2">
         <div class="final-message">
-          <p>Hi ulit!</p>
-          <p>Happy birthday to you! I hope you're doing fine. I always dream of you that it lead me to doing this lol. I hope it made you smile even a bit. Thank you for always reacting to all of my reels!</p>
-          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang.</p>
-          <p>I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.</p>
+          <p>Hi!</p>
+          <p>I hope you're having a good day. Lagi kitang napapanaginipan di ko napansin bigla na lang gumagawa na ako nito hahahah.</p>
+          <p>Anyways, I wish you all the best BFF #3, 1st si Cherry and 2nd si Naj hehe. Pang 3rd ka lang na BFF ko pero lamang ka naman kasi ikaw lang ginawaan ko neto, yii. Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
+          <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN! So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan. Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo kaso ambilis ko mawalan topic pag kausap ka in person kasi heheya aquOh..,, So bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
+          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Kung yung mga crush ko napapa smile ako, kilig, and all, ikaw naman you make me contented and happy with myself. Ganiyan. Parang ayoko nang may makilala pang iba, ayoko nang magka crush. Ganun! Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero medyo ganun.</p>
+          <p>Hay sana di naman creepy mga pinagsasabi ko. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH. Wala na corny na. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih.</p>
+          <p>Pero tampo ako saimo hmp. Di mo nireplyan mga reels ko September 9, 2026! Bago mag bday si JC! Pero okay lang naman busy naman ako gumawa nito so walang time for reels.</p>
+          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.</p>
+          <p>I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo!</p>
+        </div>
+
+        <!-- signature now lives inside the letter itself, signed at the bottom -->
+        <div class="letter-signoff fade-in delay-3">
+          <p class="sig-divider">Yours truly,</p>
+          <p class="script sig-name">Adi</p>
         </div>
       </div>
-
-      <p class="sig-divider fade-in delay-3">• • •</p>
-      <p class="script fade-in delay-3" style="font-size:1.8rem; color:var(--sage-dark);">- Adi</p>
     </div>
   </section>
 
@@ -540,15 +806,19 @@
                               appears, until she reaches the final page
          "clap.mp3"         — plays when she picks the correct answer
          "wrong.mp3"        — plays when she picks the wrong answer
-         "last_page.mp3"    — calm, romantic track, plays only on the very last page
+         "spring.mp3"       — calm, romantic track, plays only on the very last page
      Until a given file exists, that one sound just stays silent — nothing breaks.
      ======================================================= -->
 <audio id="sfxOpenLetter" src="open_letter.mp3" preload="auto"></audio>
 <audio id="bgmMain" src="background.mp3" loop preload="none"></audio>
-<audio id="bgmFinal" src="last_page.mp3" loop preload="none"></audio>
+<audio id="bgmFinal" src="spring.mp3" loop preload="none"></audio>
 <audio id="sfxClap" src="clap.mp3" preload="auto"></audio>
 <audio id="sfxWrong" src="wrong.mp3" preload="auto"></audio>
 <button class="sound-toggle" id="soundToggle" title="Mute/unmute music">🔊</button>
+<div class="scroll-hint" id="scrollHint" aria-hidden="true">keep scrolling ⌄</div>
+
+<!-- confetti on a correct answer, eye-roll emoji burst on a wrong one — see launchConfetti()/launchEmojiBurst() -->
+<div class="reaction-layer" id="reactionLayer" aria-hidden="true"></div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
@@ -628,6 +898,19 @@ const questions = [
     wrongExplanation: "SI MAR SYEMPRE!!", // (c) EDIT: the big reveal headline, whichever she picks
     revealImage: "mar.jpeg",              // (a) SWAP/EDIT: the photo that pops up as the "real" answer
     revealImageAlt: "Mar"
+  },
+  {
+    id: 3,
+    image: "dottie.jpeg",            // (a) SWAP/EDIT: the picture shown for this question
+    prompt: "Who is this?",          // (b) EDIT: question text
+    choices: [
+      { id: "a", label: "Dottie" },  // (b) EDIT: choice label
+      { id: "b", label: "Dildo" }    // (b) EDIT: choice label
+    ],
+    correctChoiceId: "a",            // "Dottie" is the correct answer
+    correctExplanation: "Dottie the best!",  // shown as the body text on the correct popup
+    wrongExplanation: "BASTOS!"              // shown as the TITLE (headline) on the wrong popup
+    // (c) correctAnswerReveal skipped on purpose — falls back to "The correct answer was: Dottie"
   }
 
   // 👉 more question objects go here later, e.g.:
@@ -732,7 +1015,24 @@ let currentQuestionIndex = 0;
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0); // always start a new screen from the top
+  updateScrollHint();
+  // the letter's gentle trickle of hearts only plays while she's actually on it
+  if (id === 'screen-final') startLetterAmbientHearts(); else stopLetterAmbientHearts();
 }
+
+/* The final letter is the one screen tall enough to need scrolling on a
+   phone — this little "keep scrolling" chip makes that obvious instead of
+   the signature just appearing to be missing off the bottom of the card. */
+function updateScrollHint(){
+  const hint = document.getElementById('scrollHint');
+  const finalActive = document.getElementById('screen-final').classList.contains('active');
+  if (!finalActive){ hint.classList.remove('show'); return; }
+  const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 24);
+  hint.classList.toggle('show', !nearBottom);
+}
+window.addEventListener('scroll', updateScrollHint);
+window.addEventListener('resize', updateScrollHint);
 
 /* ---------- Screen 1: envelope ---------- */
 document.getElementById('envelopeWrap').addEventListener('click', () => {
@@ -796,7 +1096,7 @@ function renderQuestion(index){
   }
 
   const prompt = document.createElement('h2');
-  prompt.className = 'question-prompt script';
+  prompt.className = 'question-prompt';
   prompt.textContent = q.prompt;
   container.appendChild(prompt);
 
@@ -860,7 +1160,7 @@ function handleAnswer(question, chosenId){
       modalRevealImage.style.display = 'block';
     } else {
       modalIcon.style.display = '';
-      modalIcon.textContent = '😂';
+      modalIcon.textContent = '🙄';
       modalRevealImage.style.display = 'none';
     }
 
@@ -874,6 +1174,9 @@ function handleAnswer(question, chosenId){
   }
 
   isCorrect ? playCorrectSound() : playWrongSound();
+  // a reveal-photo trick question (like Mar popping up) gets a laughing burst,
+  // an ordinary wrong guess gets an eye-roll burst
+  isCorrect ? launchConfetti() : launchEmojiBurst(question.revealImage ? '😂' : '🙄');
   document.getElementById('modalOverlay').classList.add('active');
 }
 
@@ -893,7 +1196,8 @@ document.getElementById('modalNextBtn').addEventListener('click', () => {
 });
 
 /* =====================================================================
-   FLOATING PARTICLES (lightweight, CSS-driven)
+   FLOATING PARTICLES (lightweight, CSS-driven) — the heart bursts that
+   play on the greeting screen and the final screen.
    ===================================================================== */
 function createParticles(container, count = 16){
   container.innerHTML = '';
@@ -909,6 +1213,107 @@ function createParticles(container, count = 16){
     container.appendChild(p);
   }
 }
+
+/* =====================================================================
+   LETTER AMBIENT HEARTS — a slow, ongoing trickle of hearts/sparkles
+   drifting up from the final screen (on top of the one-off burst above),
+   so the letter keeps feeling alive for as long as she's reading it.
+   Started when the final screen opens, stopped the moment she leaves it.
+   ===================================================================== */
+let letterHeartsTimer = null;
+function startLetterAmbientHearts(){
+  stopLetterAmbientHearts();
+  const container = document.getElementById('particlesFinal');
+  const symbols = ['💚', '🤍', '✨'];
+  letterHeartsTimer = setInterval(() => {
+    const p = document.createElement('span');
+    p.className = 'particle';
+    p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    p.style.left = Math.random() * 100 + '%';
+    p.style.fontSize = (0.75 + Math.random() * 0.9) + 'rem';
+    p.style.animationDuration = (7 + Math.random() * 4) + 's';
+    p.style.animationDelay = '0s';
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 11500); // clean up long after it's floated off-screen
+  }, 1100);
+}
+function stopLetterAmbientHearts(){
+  if (letterHeartsTimer){ clearInterval(letterHeartsTimer); letterHeartsTimer = null; }
+}
+
+/* =====================================================================
+   ANSWER REACTIONS — confetti on correct, a burst of eye-rolling emoji on
+   wrong. Both fire into the same full-screen #reactionLayer, cleared and
+   refilled each time so they never pile up across questions.
+   ===================================================================== */
+function launchConfetti(count = 42){
+  const layer = document.getElementById('reactionLayer');
+  layer.innerHTML = '';
+  const colors = ['var(--gold)', 'var(--pink-strong)', 'var(--sage-mid)', 'var(--sage-dark)', 'var(--blush)', 'var(--cream)'];
+  for (let i = 0; i < count; i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const w = 6 + Math.random() * 5;
+    const h = 10 + Math.random() * 6;
+    piece.style.left = (10 + Math.random() * 80) + '%';
+    piece.style.width = w + 'px';
+    piece.style.height = h + 'px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.border = '1px solid var(--ink)';
+    piece.style.borderRadius = '1px';
+    piece.style.setProperty('--spin', (Math.random() * 500 + 260) + 'deg');
+    piece.style.animationDuration = (1.5 + Math.random() * 1.1) + 's';
+    piece.style.animationDelay = (Math.random() * .35) + 's';
+    layer.appendChild(piece);
+  }
+  setTimeout(() => { if (layer.firstChild && layer.firstChild.className === 'confetti-piece') layer.innerHTML = ''; }, 3200);
+}
+
+function launchEmojiBurst(emoji, count = 12){
+  const layer = document.getElementById('reactionLayer');
+  layer.innerHTML = '';
+  for (let i = 0; i < count; i++){
+    const pop = document.createElement('span');
+    pop.className = 'emoji-pop';
+    pop.textContent = emoji;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 120;
+    pop.style.left = (30 + Math.random() * 40) + '%';
+    pop.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+    pop.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
+    pop.style.setProperty('--rot', (Math.random() * 60 - 30) + 'deg');
+    pop.style.fontSize = (1.2 + Math.random() * 1.2) + 'rem';
+    pop.style.animationDuration = (1.1 + Math.random() * .6) + 's';
+    pop.style.animationDelay = (Math.random() * .3) + 's';
+    layer.appendChild(pop);
+  }
+  setTimeout(() => { if (layer.firstChild && layer.firstChild.className === 'emoji-pop') layer.innerHTML = ''; }, 2200);
+}
+
+/* =====================================================================
+   AMBIENT SPARKLES — the little twinkling sparkle effect from the guide
+   video/screenshot. Generated once, always running, sits behind every
+   screen on a fixed full-viewport layer (see .sparkle-layer in CSS).
+   ===================================================================== */
+function createSparkles(container, count){
+  // Fewer sparkles on phones (the primary target) — plenty of twinkle
+  // without cluttering a small screen or taxing a lower-end device.
+  if (count === undefined) count = window.innerWidth < 640 ? 18 : 30;
+  const glyphs = ['✦', '✧', '⋆'];
+  const colors = ['gold', 'pink', 'white'];
+  for (let i = 0; i < count; i++){
+    const s = document.createElement('span');
+    s.className = 'sparkle ' + colors[Math.floor(Math.random() * colors.length)];
+    s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.fontSize = (0.6 + Math.random() * 1.1) + 'rem';
+    s.style.animationDuration = (1.6 + Math.random() * 2.4) + 's';
+    s.style.animationDelay = (Math.random() * 4) + 's';
+    container.appendChild(s);
+  }
+}
+createSparkles(document.getElementById('sparkleLayer'));
 </script>
 
 </body>
