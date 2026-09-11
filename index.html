@@ -245,10 +245,13 @@
 
   /* ===================== SCREEN 1: ENVELOPE ===================== */
   /* hand-drawn SVG flipbook: env1 (sealed, ribbon + wax seal) -> env2 (ribbon
-     loosening, seal cracking) -> env3 (open, letter slid out). JS swaps
-     #envelopeImg's src frame by frame on tap. All three share the same
-     320x320 viewBox, so the box holds a fixed size across frames — the
-     opening reads through the artwork itself, no layout jump. */
+     loosening, seal cracking) -> env3 (open, letter slid out). Two stacked
+     <img> layers crossfade between frames (JS toggles which one is "front"),
+     rather than one <img> fading to blank then swapping src — that old
+     approach had a gap with nothing visible in it, which read as a stutter
+     instead of a dissolve. All three frames share the same 320x320 viewBox,
+     so the box holds a fixed size throughout — the opening reads through the
+     artwork itself, no layout jump. */
   .envelope-wrap{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; user-select:none; touch-action:manipulation; }
   .envelope-frames{
     position:relative;
@@ -256,10 +259,14 @@
     aspect-ratio: 1/1;
     cursor:pointer;
   }
-  .envelope-frames img{
+  .envelope-layer{
+    position:absolute; inset:0;
     display:block; width:100%; height:100%;
-    transition: opacity .18s ease;
+    opacity:0;
+    transform: scale(.97);
+    transition: opacity .55s ease, transform .55s ease;
   }
+  .envelope-layer.front{ opacity:1; transform: scale(1); }
 
   /* (b) EDIT: env3.svg's letter is a rect from x=70,y=90 to x=250,y=290 in
      its 320x320 viewBox, and the front flap only covers it below y=235 — so
@@ -578,21 +585,21 @@
     z-index:1;
     animation: fadeInTilt .8s ease .1s both;
   }
-  .polaroid-2{ /* ali2.png — main portrait, front and center-top */
+  .polaroid-2{ /* ali2.jpg — main portrait, front and center-top */
     --tilt: -6deg;
     width:83px; height:110px;
     left: 54px; top: 0;
     z-index:4;
     animation: fadeInTilt .8s ease .25s both;
   }
-  .polaroid-3{ /* ali3.png — accent, upper-left */
+  .polaroid-3{ /* ali3.jpg — accent, upper-left */
     --tilt: 9deg;
     width:59px; height:98px;
     left: 0; top: 32px;
     z-index:2;
     animation: fadeInTilt .8s ease .4s both;
   }
-  .polaroid-4{ /* ali4.png — accent, upper-right */
+  .polaroid-4{ /* ali4.jpg — accent, upper-right */
     --tilt: -11deg;
     width:58px; height:95px;
     right: 0; top: 27px;
@@ -703,7 +710,9 @@
              the paper peeking out — the "next page" button sits over its blank
              white paper area so it reads as tapping the letter itself. -->
         <div class="envelope-frames" id="envelope">
-          <img id="envelopeImg" src="env1.svg" alt="a sealed envelope">
+          <!-- two stacked layers crossfade between frames — see the .envelope-layer comment above -->
+          <img class="envelope-layer front" id="envelopeImgA" src="env1.svg" alt="a sealed envelope">
+          <img class="envelope-layer" id="envelopeImgB" src="env1.svg" alt="" aria-hidden="true">
           <div class="envelope-next-btn-pos" id="btnEnvelopeNextPos" hidden>
             <button class="btn-primary envelope-next-btn" id="btnEnvelopeNext" type="button">Open letter</button>
           </div>
@@ -726,7 +735,7 @@
           <span class="ph-icon">🌸</span>
           <span>her photo goes here</span>
         </div>
-        <img id="herPhoto" alt="Her" style="display:none;">
+        <img id="herPhoto" alt="Her" style="display:none;" decoding="async">
       </div>
 
       <h1 class="greeting-name fade-in delay-1">Hi, <span id="herNameGreeting">Allysa</span>!</h1>
@@ -744,7 +753,7 @@
     <div class="bg-glow accent-quiz-intro"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <!-- (a) SWAP/EDIT: the photo shown above the quiz-intro title -->
-      <img class="quiz-icon-image fade-in" src="bai.jpeg" alt="Bai">
+      <img class="quiz-icon-image fade-in" src="bai.jpeg" alt="Bai" loading="lazy" decoding="async">
       <h2 class="quiz-intro-title fade-in delay-1">Volume up! Basahon mong maray! HAHAHAH</h2>
       <div class="fade-in delay-2">
         <button class="btn-primary" id="btnStartQuiz">Start</button>
@@ -783,10 +792,10 @@
       <!-- (a) SWAP/EDIT: these four photos are placeholders too — swap in whichever
            four you'd like in this little collage. -->
       <div class="final-collage">
-        <div class="polaroid polaroid-1"><img src="group1.jpeg" alt="us"></div>
-        <div class="polaroid polaroid-2"><img src="ali2.png" alt="Allysa"></div>
-        <div class="polaroid polaroid-3"><img src="ali3.png" alt="Allysa"></div>
-        <div class="polaroid polaroid-4"><img src="ali4.png" alt="Allysa"></div>
+        <div class="polaroid polaroid-1"><img src="group1.jpeg" alt="us" loading="lazy" decoding="async" width="480" height="360"></div>
+        <div class="polaroid polaroid-2"><img src="ali2.jpg" alt="Allysa" loading="lazy" decoding="async" width="255" height="340"></div>
+        <div class="polaroid polaroid-3"><img src="ali3.jpg" alt="Allysa" loading="lazy" decoding="async" width="205" height="340"></div>
+        <div class="polaroid polaroid-4"><img src="ali4.jpg" alt="Allysa" loading="lazy" decoding="async" width="205" height="340"></div>
         <span class="collage-sticker">💚</span>
       </div>
 
@@ -845,7 +854,7 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <div class="modal-icon" id="modalIcon">🎉</div>
-    <img class="modal-reveal-image" id="modalRevealImage" style="display:none;" alt="">
+    <img class="modal-reveal-image" id="modalRevealImage" style="display:none;" alt="" decoding="async">
     <h3 class="modal-title" id="modalTitle">You're correct!</h3>
     <p class="modal-text" id="modalText"></p>
     <button class="btn-primary" id="modalNextBtn">Next</button>
@@ -863,7 +872,7 @@ const HER_NAME = "Allysa";
    Point this at her actual photo filename once you have it.
    If the file doesn't exist yet, the cute placeholder above is shown instead.
    ===================================================================== */
-const HER_PHOTO_SRC = "ali.png";
+const HER_PHOTO_SRC = "ali.jpg";
 
 /* =====================================================================
    QUIZ QUESTIONS DATA
@@ -990,17 +999,17 @@ function playClickSound(){
 function playOpenLetterSound(){
   if (!soundOn) return;
   sfxOpenLetter.currentTime = 0;
-  sfxOpenLetter.play().catch(() => {});
+  playWithRetry(sfxOpenLetter, 2);
 }
 function playCorrectSound(){
   if (!soundOn) return;
   sfxClap.currentTime = 0;
-  sfxClap.play().catch(() => {});
+  playWithRetry(sfxClap, 2);
 }
 function playWrongSound(){
   if (!soundOn) return;
   sfxWrong.currentTime = 0;
-  sfxWrong.play().catch(() => {});
+  playWithRetry(sfxWrong, 2);
 }
 // Cuts off any still-playing clap/wrong effect from the question she just
 // answered, so it never bleeds into the next question or the final page.
@@ -1008,16 +1017,30 @@ function stopAnswerSfx(){
   sfxClap.pause();  sfxClap.currentTime = 0;
   sfxWrong.pause(); sfxWrong.currentTime = 0;
 }
+// Retries a .play() call if it gets rejected (e.g. a slow/flaky mobile
+// connection hadn't buffered enough yet) instead of silently giving up for
+// the rest of the visit — that silent give-up was why the music sometimes
+// just never showed up on other devices.
+function playWithRetry(el, attemptsLeft){
+  if (attemptsLeft === undefined) attemptsLeft = 4;
+  el.play().catch(() => {
+    if (attemptsLeft <= 0) return;
+    const retry = () => { el.removeEventListener('canplay', retry); playWithRetry(el, attemptsLeft - 1); };
+    el.addEventListener('canplay', retry, { once: true });
+    setTimeout(retry, 1500); // fallback in case 'canplay' never fires
+  });
+}
+
 let mainMusicStarted = false;
 function startMainMusic(){
   if (mainMusicStarted) return;
   mainMusicStarted = true;
-  bgmMain.play().catch(() => {}); // quietly no-ops if the file isn't there yet
+  playWithRetry(bgmMain);
 }
 function switchToFinalMusic(){
   bgmMain.pause();
   bgmFinal.currentTime = 0;
-  bgmFinal.play().catch(() => {});
+  playWithRetry(bgmFinal);
 }
 document.getElementById('soundToggle').addEventListener('click', () => {
   soundOn = !soundOn;
@@ -1058,19 +1081,25 @@ window.addEventListener('resize', updateScrollHint);
 
 /* ---------- Screen 1: envelope ---------- */
 /* frame-by-frame: env1 (sealed) -> env2 (ribbon loosening) -> env3 (open,
-   paper out), then the "next page" button fades in over env3's paper. */
+   paper out), then the "next page" button fades in over env3's paper.
+   Two stacked <img> layers crossfade for each frame change: the back layer
+   gets the new src *before* anything animates, then the two swap which one
+   is "front" so the old frame fades out while the new one fades in at the
+   same time — a real dissolve, not fade-to-blank-then-swap. */
 const envelopeFrames = document.getElementById('envelope');
-const envelopeImg = document.getElementById('envelopeImg');
+const envelopeLayers = [document.getElementById('envelopeImgA'), document.getElementById('envelopeImgB')];
 const envelopeHint = document.getElementById('envelopeHint');
 const btnEnvelopeNext = document.getElementById('btnEnvelopeNext');
 const btnEnvelopeNextPos = document.getElementById('btnEnvelopeNextPos');
+let envelopeFrontLayer = 0;
 
 function setEnvelopeFrame(src){
-  envelopeImg.style.opacity = 0;
-  setTimeout(() => {
-    envelopeImg.src = src;
-    envelopeImg.style.opacity = 1;
-  }, 120);
+  const back = envelopeLayers[1 - envelopeFrontLayer];
+  const front = envelopeLayers[envelopeFrontLayer];
+  back.src = src;
+  front.classList.remove('front');
+  back.classList.add('front');
+  envelopeFrontLayer = 1 - envelopeFrontLayer;
 }
 
 document.getElementById('envelopeWrap').addEventListener('click', () => {
@@ -1079,11 +1108,11 @@ document.getElementById('envelopeWrap').addEventListener('click', () => {
   playOpenLetterSound();
   envelopeHint.style.opacity = 0;
   setEnvelopeFrame('env2.svg');
-  setTimeout(() => setEnvelopeFrame('env3.svg'), 500);
+  setTimeout(() => setEnvelopeFrame('env3.svg'), 650);
   setTimeout(() => {
     btnEnvelopeNextPos.hidden = false;
     requestAnimationFrame(() => btnEnvelopeNextPos.classList.add('show'));
-  }, 1000);
+  }, 1300);
 });
 
 btnEnvelopeNext.addEventListener('click', (e) => {
@@ -1111,6 +1140,10 @@ herPhotoImg.src = HER_PHOTO_SRC;
 document.getElementById('btnToQuizIntro').addEventListener('click', () => {
   playClickSound();
   showScreen('screen-quiz-intro');
+  // Start fetching background.mp3 now, a screen early, so on a slow phone
+  // connection it has had time to buffer before Q1 actually needs it.
+  bgmMain.preload = 'auto';
+  bgmMain.load();
 });
 
 /* ---------- Screen 3 to Screen 4 ---------- */
