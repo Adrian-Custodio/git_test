@@ -244,112 +244,44 @@
   @keyframes bounceHint{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(5px); } }
 
   /* ===================== SCREEN 1: ENVELOPE ===================== */
-  .envelope-wrap{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; cursor:pointer; user-select:none; touch-action:manipulation; }
-  .envelope{
+  /* hand-drawn SVG flipbook: env1 (sealed, ribbon + wax seal) -> env2 (ribbon
+     loosening, seal cracking) -> env3 (open, letter slid out). JS swaps
+     #envelopeImg's src frame by frame on tap. All three share the same
+     320x320 viewBox, so the box holds a fixed size across frames — the
+     opening reads through the artwork itself, no layout jump. */
+  .envelope-wrap{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; user-select:none; touch-action:manipulation; }
+  .envelope-frames{
     position:relative;
-    width: min(260px, 70vw);
-    aspect-ratio: 3/2;
-    filter: drop-shadow(0 10px 0 rgba(51,66,46,.18));
-    animation: bob 3s ease-in-out infinite;
+    width: min(300px, 78vw);
+    aspect-ratio: 1/1;
+    cursor:pointer;
   }
-  @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+  .envelope-frames img{
+    display:block; width:100%; height:100%;
+    transition: opacity .18s ease;
+  }
 
-  .envelope-body{
-    position:absolute; inset:0;
-    background: var(--cream);
-    border-radius: 10px;
-    border: 3px solid var(--ink);
-    box-shadow: 5px 5px 0 var(--ink);
-  }
-  .envelope-card{
-    position:absolute;
-    left:50%; bottom:8%;
-    width:78%; height:66%;
-    background: var(--white);
-    border: 2px solid var(--ink);
-    border-radius:8px;
-    box-shadow: 3px 3px 0 rgba(51,66,46,.25);
-    transform: translate(-50%, 20%) scale(.82);
+  /* (b) EDIT: env3.svg's letter is a rect from x=70,y=90 to x=250,y=290 in
+     its 320x320 viewBox, and the front flap only covers it below y=235 — so
+     x=50%, y=51% sits dead center in the guaranteed-clear paper area above
+     the flap. Recompute this if env3.svg's geometry ever changes.
+     The centering transform lives on this wrapper, never on the button
+     itself — .btn-primary's :hover/:active also set `transform` (the same
+     squish every other button gets), and a second transform on one element
+     always replaces the first rather than combining with it. Splitting them
+     onto two elements lets the button keep the normal hover/active feel
+     without ever fighting the wrapper for centering. */
+  .envelope-next-btn-pos{
+    position:absolute; left:50%; top:51%;
+    transform:translate(-50%,-50%);
     opacity:0;
-    transition: transform .7s cubic-bezier(.34,1.56,.64,1) .35s, opacity .5s ease .35s;
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.6rem;
+    transition: opacity .35s ease;
   }
-  .envelope-flap{
-    position:absolute; top:0; left:0;
-    width:100%; height:58%;
-    background: linear-gradient(160deg, var(--sage), var(--sage-mid));
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-    border-radius: 14px 14px 0 0;
-    transform-origin: top center;
-    transition: transform .7s cubic-bezier(.22,.61,.36,1) .18s; /* waits a beat for the seal to crack first */
-    z-index:3;
-  }
+  .envelope-next-btn-pos.show{ opacity:1; }
+  .envelope-next-btn-pos[hidden]{ display:none; }
+  .envelope-next-btn{ padding:.55rem 1.3rem; font-size:.85rem; white-space:nowrap; }
 
-  /* ribbon: a little bow sits across the flap until tapped, then it unties —
-     loops and tails swing loose and fade, then the two ribbon ends slide
-     apart off the sides, right before the flap itself swings open */
-  .ribbon{
-    position:absolute; top:38%; left:0; right:0; height:18px;
-    transform: translateY(-50%);
-    z-index:4;
-  }
-  .ribbon-strip{
-    position:absolute; top:50%; width:50%; height:13px;
-    transform: translateY(-50%);
-    background: linear-gradient(180deg, #f2a4b4, var(--pink-strong) 55%, #cf7b8d 100%);
-    border: 2px solid var(--ink);
-    box-shadow: inset 0 -2px 3px rgba(0,0,0,.2);
-    transition: transform .55s cubic-bezier(.33,.9,.4,1) .18s, opacity .4s ease .18s;
-  }
-  .ribbon-strip-l{ left:0; border-radius: 5px 2px 2px 5px; }
-  .ribbon-strip-r{ right:0; border-radius: 2px 5px 5px 2px; }
-
-  .ribbon-tail{
-    position:absolute; top:50%; left:50%;
-    width:9px; height:20px;
-    background: linear-gradient(180deg, #f2a4b4, var(--pink-strong) 60%, #cf7b8d 100%);
-    border: 2px solid var(--ink);
-    clip-path: polygon(0 0, 100% 0, 100% 76%, 50% 100%, 0 76%); /* notched ribbon-tail point */
-    transition: transform .45s cubic-bezier(.33,.9,.4,1), opacity .35s ease;
-  }
-  .ribbon-tail-l{ transform: translate(calc(-50% - 6px), -14%) rotate(-14deg); transform-origin: top center; }
-  .ribbon-tail-r{ transform: translate(calc(-50% + 6px), -14%) rotate(14deg); transform-origin: top center; }
-
-  .ribbon-loop{
-    position:absolute; top:50%; left:50%;
-    width:15px; height:20px;
-    background: linear-gradient(160deg, #f2a4b4, var(--pink-strong) 60%, #cf7b8d 100%);
-    border: 2px solid var(--ink);
-    border-radius: 60% 60% 55% 55% / 65% 65% 60% 60%;
-    transition: transform .45s cubic-bezier(.33,.9,.4,1), opacity .35s ease;
-  }
-  .ribbon-loop-l{ transform: translate(-92%, -58%) rotate(-24deg); }
-  .ribbon-loop-r{ transform: translate(-8%, -58%) rotate(24deg); }
-
-  .ribbon-knot{
-    position:absolute; top:50%; left:50%;
-    width:11px; height:10px;
-    transform: translate(-50%,-50%);
-    background: linear-gradient(160deg, #e78fa0, #b95f74);
-    border: 2px solid var(--ink);
-    border-radius: 3px;
-    transition: transform .4s ease, opacity .35s ease;
-  }
-
-  .envelope.open .envelope-flap{ transform: rotateX(180deg); }
-  .envelope.open .envelope-card{ transform: translate(-50%, -6%) scale(1); opacity:1; transition: transform .6s cubic-bezier(.22,.61,.36,1) .3s, opacity .4s ease .3s; }
-  /* the bow loosens first... */
-  .envelope.open .ribbon-loop-l{ transform: translate(-140%, -85%) rotate(-70deg) scale(.5); opacity:0; }
-  .envelope.open .ribbon-loop-r{ transform: translate(40%, -85%) rotate(70deg) scale(.5); opacity:0; }
-  .envelope.open .ribbon-tail-l{ transform: translate(calc(-50% - 18px), 45%) rotate(-45deg); opacity:0; }
-  .envelope.open .ribbon-tail-r{ transform: translate(calc(-50% + 18px), 45%) rotate(45deg); opacity:0; }
-  .envelope.open .ribbon-knot{ transform: translate(-50%,-50%) scale(.3); opacity:0; }
-  /* ...then the two ribbon ends slide apart off the sides */
-  .envelope.open .ribbon-strip-l{ transform: translateY(-50%) translateX(-120%); opacity:0; }
-  .envelope.open .ribbon-strip-r{ transform: translateY(-50%) translateX(120%); opacity:0; }
-
-  .envelope-hint{ font-family:'Pixelify Sans', sans-serif; font-size:.85rem; color: var(--sage-dark); font-weight:700; letter-spacing:.03em; }
+  .envelope-hint{ font-family:'Pixelify Sans', sans-serif; font-size:.85rem; color: var(--sage-dark); font-weight:700; letter-spacing:.03em; transition: opacity .3s ease; }
 
   /* ===================== SCREEN 2: CARD / GREETING ===================== */
   .photo-frame{
@@ -766,23 +698,17 @@
     <div class="bg-glow accent-envelope"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <div class="envelope-wrap" id="envelopeWrap">
-        <div class="envelope" id="envelope">
-          <div class="envelope-body"></div>
-          <div class="envelope-card">💌</div>
-          <div class="envelope-flap"></div>
-          <!-- ribbon: a little bow sits across the flap, unties and slides
-               away the moment she taps to open it -->
-          <div class="ribbon" id="ribbon">
-            <span class="ribbon-strip ribbon-strip-l"></span>
-            <span class="ribbon-strip ribbon-strip-r"></span>
-            <span class="ribbon-tail ribbon-tail-l"></span>
-            <span class="ribbon-tail ribbon-tail-r"></span>
-            <span class="ribbon-loop ribbon-loop-l"></span>
-            <span class="ribbon-loop ribbon-loop-r"></span>
-            <span class="ribbon-knot"></span>
+        <!-- (a) SWAP/EDIT: env1 -> env2 -> env3 is the sealed-to-open flipbook,
+             swapped frame by frame in JS on tap. env3 is the wide-open shot with
+             the paper peeking out — the "next page" button sits over its blank
+             white paper area so it reads as tapping the letter itself. -->
+        <div class="envelope-frames" id="envelope">
+          <img id="envelopeImg" src="env1.svg" alt="a sealed envelope">
+          <div class="envelope-next-btn-pos" id="btnEnvelopeNextPos" hidden>
+            <button class="btn-primary envelope-next-btn" id="btnEnvelopeNext" type="button">Open letter</button>
           </div>
         </div>
-        <p class="envelope-hint">tap to open</p>
+        <p class="envelope-hint" id="envelopeHint">tap to open</p>
       </div>
     </div>
   </section>
@@ -872,18 +798,18 @@
           <p>Hi!</p>
           <p>I hope you're having a good day. Lagi kitang napapanaginipan di ko napansin bigla na lang gumagawa na ako nito hahahah.</p>
           <p>Anyways, I wish you all the best BFF #3, 1st si Cherry and 2nd si Naj hehe. Pang 3rd ka lang na BFF ko pero lamang ka naman kasi ikaw lang ginawaan ko neto, yii. Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
-          <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN! So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan. Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo kaso ambilis ko mawalan topic pag kausap ka in person kasi heheya aquOh..,, So bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
-          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Kung yung mga crush ko napapa smile ako, kilig, and all, ikaw naman you make me contented and happy with myself. Ganiyan. Parang ayoko nang may makilala pang iba, ayoko nang magka crush. Ganun! Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero medyo ganun.</p>
-          <p>Hay sana di naman creepy mga pinagsasabi ko. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH. Wala na corny na. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih.</p>
-          <p>Pero tampo ako saimo hmp. Di mo nireplyan mga reels ko September 9, 2026! Bago mag bday si JC! Pero okay lang naman busy naman ako gumawa nito so walang time for reels.</p>
-          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.</p>
-          <p>I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo!</p>
+          <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN! So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan. Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo kaso ambilis ko mawalan topic pag kausap ka in person kasi heheya aquOh..,, So bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pati nga ex ko na parang tanga nikwento ko out of nowhere wtf. Ang cringe ko sa part na yon. Wala talaga ko ma-topic and desperate ako maging interested ka sa mga sinasabi ko HAHAHAH. Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
+          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. Parang gusto ko bugbugin lahat ng bumabadtrip sayo tas mga nang aaway and everything. Gusto ko protektahan lang yang smile mo and magstay ka lang na ganiyan. Makita ko lang na naka smile ka, or marinig na tumatawa ka nung trademark mo na tawa na may singhot at pusngak, sa loob loob ko ang saya ko na rin. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Ang hirap kasi eh mas malaki ka sakin pero nakukyutan akong masyado sayo, legit. Di ko nga kaya kahit magjoke lang na hindi ka cute eh, ang herap hahahah. Iba epekto ng cuteness mo sa akin beh, parang binabalik niya ko sa pagka-bata na walang inatupag kundi magpakasaya lang tas walang problema ganun. Dun pa lang alam ko nang dapat ikeep and angkinin na kita HAHAHAH kaso shet cnu b nmn aquOhh.,?? Konting seriously mode lang, alam kong di ko ikaw deserve, aww. Masyado akong makasalanan and masyadong demonyo para sayo, lam ko yan. Di ko deserve mafeel yung happiness and excitement na nafefeel ko sayo. Kaya wala rin naman akong inaasahan, AWWW. Matagal ko nang napagtanto na solo akong tatanda (char samahan mo ako). Pero, damn. I really love thinking, no, imagining, all the things that we could be. The places that we would go to, the things that we would do, the house that we're gonna have, how happy we would be. Pero I know that it's going to be super selfish. Kasi ako lang yung magiging masaya (siguro). Kaya matagal ko na rin inekisan plano kong kidnappin ka na lang hehe. Kung yung mga crush ko before napapa smile ako, kilig, and all, ikaw naman you make me feel contented and happy with myself. Ganiyan. ~ I like me better when I'm with you, kanta yarn. Parang ayoko nang may makilala pa na iba, ayoko nang magka crush. Ganun! Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero ganun e. Parang gusto kita piliin lagi, ganun! Yun talaga! Me wants you, but me is not deserve u. ~ But if you give me half a chance I'll show... kanta ulit yarn. Pero bigyan mo lang talaga, charot! Hahahah</p>
+          <p>Hay dami ko ebas gagi, sana di naman creepy huhu. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH. Wala na corny na masyado. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih.</p>
+          <p>Pero tampo ako sayo hmp. Di mo nireplyan mga reels ko September 9, 2026! Bago mag bday si JC! Pero okay lang naman busy naman ako gumawa nito so walang time for reels.</p>
+          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. DI NGA KITA CRUSH, DAPAT BILHAN NA KITA SINGSING. GANUN! HAHAHAHAHA. Charot ang aggressive grabe. I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.</p>
+          <p>I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo! That's all for today. Please remember that you can always give me a call/text back if you have any other more concerns. You can also send me your feedback about the service I had provided you today through Instagram or Facebook, 5 hearts being the highest (YES!!!) and 1 being the lowest (no). The website would be the link you used to open this letter. Thank you for letting me assist you today, please give me some of your time in exchange for all of mine. My name is Adi, hoping to see you soon.</p>
         </div>
 
         <!-- signature now lives inside the letter itself, signed at the bottom -->
         <div class="letter-signoff fade-in delay-3">
           <p class="sig-divider">Yours truly,</p>
-          <p class="script sig-name">Adi</p>
+          <p class="script sig-name">Truly yours.</p>
         </div>
       </div>
     </div>
@@ -1131,15 +1057,40 @@ window.addEventListener('scroll', updateScrollHint);
 window.addEventListener('resize', updateScrollHint);
 
 /* ---------- Screen 1: envelope ---------- */
-document.getElementById('envelopeWrap').addEventListener('click', () => {
-  const envelope = document.getElementById('envelope');
-  if (envelope.classList.contains('open')) return;
-  playOpenLetterSound();
-  envelope.classList.add('open');
+/* frame-by-frame: env1 (sealed) -> env2 (ribbon loosening) -> env3 (open,
+   paper out), then the "next page" button fades in over env3's paper. */
+const envelopeFrames = document.getElementById('envelope');
+const envelopeImg = document.getElementById('envelopeImg');
+const envelopeHint = document.getElementById('envelopeHint');
+const btnEnvelopeNext = document.getElementById('btnEnvelopeNext');
+const btnEnvelopeNextPos = document.getElementById('btnEnvelopeNextPos');
+
+function setEnvelopeFrame(src){
+  envelopeImg.style.opacity = 0;
   setTimeout(() => {
-    showScreen('screen-greeting');
-    createParticles(document.getElementById('particlesGreeting'));
-  }, 950);
+    envelopeImg.src = src;
+    envelopeImg.style.opacity = 1;
+  }, 120);
+}
+
+document.getElementById('envelopeWrap').addEventListener('click', () => {
+  if (envelopeFrames.classList.contains('opened')) return;
+  envelopeFrames.classList.add('opened');
+  playOpenLetterSound();
+  envelopeHint.style.opacity = 0;
+  setEnvelopeFrame('env2.svg');
+  setTimeout(() => setEnvelopeFrame('env3.svg'), 500);
+  setTimeout(() => {
+    btnEnvelopeNextPos.hidden = false;
+    requestAnimationFrame(() => btnEnvelopeNextPos.classList.add('show'));
+  }, 1000);
+});
+
+btnEnvelopeNext.addEventListener('click', (e) => {
+  e.stopPropagation();
+  playClickSound();
+  showScreen('screen-greeting');
+  createParticles(document.getElementById('particlesGreeting'));
 });
 
 /* ---------- Her name + photo fill-in ---------- */
