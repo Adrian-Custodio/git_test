@@ -1173,14 +1173,20 @@
                               startPauseBgm() in the script. Add more <audio> tags
                               the same way for future pause screens.
      Until a given file exists, that one sound just stays silent — nothing breaks.
+     clap.mp3/wrong.mp3 are NOT <audio> tags — mobile browsers (Safari on
+     cellular especially) won't reliably honor a currentTime seek on an
+     <audio> element before it's fully buffered, so the "skip the 1s of dead
+     air" trick from seekAndPlay() landed late or not at all on phones. They're
+     instead fetched + decoded into Web Audio buffers (see loadSfxBuffer() /
+     playBufferedSfx() in the script) and played with a sample-accurate
+     start-offset, which has no such buffering dependency. See SFX_FILES
+     further down for how they're preloaded.
      ======================================================= -->
 <audio id="sfxOpenLetter" src="open_letter.mp3" preload="auto"></audio>
 <audio id="bgmMain" src="background.mp3" loop preload="none"></audio>
 <audio id="bgmFinal" src="photograph.mp3" loop preload="none"></audio>
 <audio id="bgmPause" src="be.mp3" preload="none"></audio>
 <audio id="bgmPause2" src="spring.mp3" preload="none"></audio>
-<audio id="sfxClap" src="clap.mp3" preload="auto"></audio>
-<audio id="sfxWrong" src="wrong.mp3" preload="auto"></audio>
 <button class="sound-toggle" id="soundToggle" title="Mute/unmute music">🔊</button>
 <div class="scroll-hint" id="scrollHint" aria-hidden="true">keep scrolling ⌄</div>
 
@@ -1420,8 +1426,6 @@ const bgmMain = document.getElementById('bgmMain');
 const bgmFinal = document.getElementById('bgmFinal');
 const bgmPause = document.getElementById('bgmPause');
 const bgmPause2 = document.getElementById('bgmPause2');
-const sfxClap = document.getElementById('sfxClap');
-const sfxWrong = document.getElementById('sfxWrong');
 bgmMain.volume = 0.35;
 bgmPause.volume = 0.35;
 bgmPause2.volume = 0.35;
@@ -1460,21 +1464,39 @@ function playOpenLetterSound(){
 // clap.mp3/wrong.mp3 both start with about a second of dead air (just how
 // those files were downloaded) — skip straight to the 1s mark instead of 0
 // so the sound effect actually lands right when she taps an answer, not a
-// beat late. seekAndPlay (defined above, for the pause screens' bgm) already
-// handles waiting for metadata if the file isn't buffered enough yet to seek.
-function playCorrectSound(){
-  if (!soundOn) return;
-  seekAndPlay(sfxClap, 1);
+// beat late. These two are decoded into Web Audio buffers rather than played
+// as <audio> elements (see loadSfxBuffer()/playBufferedSfx() below) because
+// seeking an <audio> element's currentTime before it's fully buffered is
+// unreliable on mobile — that's what caused the 1s skip to silently not
+// happen on phones even though it worked fine on desktop.
+const SFX_FILES = { clap: 'clap.mp3', wrong: 'wrong.mp3' };
+let sfxBuffers = {};
+function loadSfxBuffer(key, url, onSettle){
+  fetch(url)
+    .then(r => r.arrayBuffer())
+    .then(data => getAudioCtx().decodeAudioData(data))
+    .then(buffer => { sfxBuffers[key] = buffer; onSettle(); })
+    .catch(() => onSettle()); // missing/broken file — stay silent, same as every other asset on this page
 }
-function playWrongSound(){
+let activeAnswerSfx = null;
+function playBufferedSfx(key, offset){
   if (!soundOn) return;
-  seekAndPlay(sfxWrong, 1);
+  if (activeAnswerSfx){ try { activeAnswerSfx.stop(); } catch(e){} activeAnswerSfx = null; }
+  const buffer = sfxBuffers[key];
+  if (!buffer) return; // still fetching/decoding (very slow connection) — stay quiet rather than play from the wrong spot
+  const ctx = getAudioCtx();
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  src.connect(ctx.destination);
+  src.start(0, Math.min(offset, Math.max(buffer.duration - 0.01, 0)));
+  activeAnswerSfx = src;
 }
+function playCorrectSound(){ playBufferedSfx('clap', 1); }
+function playWrongSound(){ playBufferedSfx('wrong', 1); }
 // Cuts off any still-playing clap/wrong effect from the question she just
 // answered, so it never bleeds into the next question or the final page.
 function stopAnswerSfx(){
-  sfxClap.pause();  sfxClap.currentTime = 0;
-  sfxWrong.pause(); sfxWrong.currentTime = 0;
+  if (activeAnswerSfx){ try { activeAnswerSfx.stop(); } catch(e){} activeAnswerSfx = null; }
 }
 // Retries a .play() call if it gets rejected (e.g. a slow/flaky mobile
 // connection hadn't buffered enough yet) instead of silently giving up for
@@ -1577,8 +1599,7 @@ document.getElementById('soundToggle').addEventListener('click', () => {
   bgmPause.muted = !soundOn;
   bgmPause2.muted = !soundOn;
   sfxOpenLetter.muted = !soundOn;
-  sfxClap.muted = !soundOn;
-  sfxWrong.muted = !soundOn;
+  if (!soundOn) stopAnswerSfx(); // clap/wrong play via Web Audio, which has no .muted — cut it off instead
   document.getElementById('soundToggle').textContent = soundOn ? '🔊' : '🔇';
 });
 
@@ -2235,8 +2256,10 @@ renderFinalPhotoStack();
    ===================================================================== */
 
 // (a) EDIT: add a filename here whenever a new question/reveal photo is
-// added — audio needs no listing, every <audio> tag on the page (present
-// or future) is picked up automatically in runLoadingScreen() below.
+// added — background/pause music needs no listing, every <audio> tag on the
+// page (present or future) is picked up automatically in runLoadingScreen()
+// below. clap.mp3/wrong.mp3 aren't <audio> tags (see SOUND EFFECTS comment
+// above) so they're preloaded separately via SFX_FILES, also in runLoadingScreen().
 const LOADING_IMAGES = [
   'env1.svg', 'env2.svg', 'env3.svg',
   HER_PHOTO_SRC, 'bai.jpeg',
@@ -2280,7 +2303,8 @@ function runLoadingScreen(){
   document.getElementById('loadingHerName').textContent = HER_NAME;
 
   const audioEls = Array.from(document.querySelectorAll('audio'));
-  const total = LOADING_IMAGES.length + audioEls.length + 1; // +1 for the web fonts
+  const sfxKeys = Object.keys(SFX_FILES);
+  const total = LOADING_IMAGES.length + audioEls.length + sfxKeys.length + 1; // +1 for the web fonts
   let settled = 0;
   let finished = false;
 
@@ -2307,6 +2331,7 @@ function runLoadingScreen(){
 
   LOADING_IMAGES.forEach(src => preloadImage(src, bump));
   audioEls.forEach(el => preloadAudioFully(el, bump));
+  sfxKeys.forEach(key => loadSfxBuffer(key, SFX_FILES[key], bump));
 
   // document.fonts may not exist on very old browsers — count it done
   // immediately then rather than ever blocking on it
