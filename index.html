@@ -28,6 +28,12 @@
     --text-dark:#3f4a3d;
     --white:#ffffff;
     --shadow-soft: 0 10px 30px rgba(63,74,61,0.15);
+    /* extra florist-bouquet accents — used only by the loading screen's
+       flower ring/progress bar below, deliberately outside the site's
+       usual sage/pink pairing (see #screen-loading comment) */
+    --coral:#e8836b;
+    --sky:#8fb3e0;
+    --lavender:#b48fd8;
   }
 
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -257,40 +263,94 @@
   .scroll-hint.show{ display:flex; }
   @keyframes bounceHint{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(5px); } }
 
-  /* ===================== SCREEN 0: LOADING GATE ===================== */
-  /* Sits over a plain version of the sage/blush backdrop gradient (no glow
-     blobs — nothing else has rendered in yet at this point) while every
-     photo, font and sound file loads for real; see runLoadingScreen() and
-     preloadEverything() in the script for how the fill/percent/status
-     below track actual progress instead of a canned animation. */
-  #screen-loading{ background: linear-gradient(180deg, #eaf6e3 0%, #f3ddd6 100%); }
-  .loading-cake{
+  /* ===================== SCREEN 0: LOADING GATE =====================
+     Reference: idea.mp4 ~0:07–0:17 — the tunnel of overlapping flowers
+     fills the ENTIRE screen and keeps growing/spinning, edge to edge, not
+     a small medallion floating in empty space. .loading-flowers below is a
+     fixed full-bleed layer behind everything else on this screen (same
+     pattern as .pixel-scene/.sparkle-layer elsewhere): five concentric
+     rings (one wrapper per ring), each flower placed by rotate(angle)
+     translateY(-radius) — the standard "around a circle" trick — sized in
+     vmax so the whole assembly scales with the actual screen and bleeds
+     past every edge exactly like the reference's fully-zoomed flower wall,
+     each ring spinning at its own speed and alternating direction so it
+     reads as one churning vortex instead of a flat carousel. It's a plain
+     infinite CSS animation with no fixed timer, so it only ever stops
+     because the screen itself gets hidden — which now only happens once
+     she taps "Start" in the card floating over the bottom of it (see
+     .loading-textcard below) once loading actually finishes (see
+     runLoadingScreen()'s finish() further down) — so the flowers keep
+     filling the screen and turning the whole time that button is up too.
+     Deliberately NOT the site's usual sage/pink pairing (per the brief) —
+     a warm neutral backdrop with a bright center lets the flowers
+     themselves carry the color instead. */
+  #screen-loading{
+    background: linear-gradient(160deg, #fbf6ea 0%, #f7ecf3 50%, #eef1fb 100%);
+    overflow:hidden; /* clips the flower rings' vmax-sized bleed to the screen */
+  }
+  .loading-flowers{
+    position:absolute; inset:0;
+    z-index:0;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; /* clips the rings' vmax-sized bleed to this screen's own box */
+    pointer-events:none;
+    /* a bright "tunnel opening" glow at the center, fading out toward the
+       edges, so the innermost flowers read as receding into the light */
+    background: radial-gradient(circle, #fffdf8 0%, #fdf6ea 30%, rgba(253,246,234,0) 68%);
+    animation: loadingBloomPulse 5.5s ease-in-out infinite;
+  }
+  @keyframes loadingBloomPulse{
+    0%,100%{ transform: scale(1); }
+    50%{ transform: scale(1.08); }
+  }
+  .flower-ring{
+    position:absolute; inset:0;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+    animation-duration: var(--dur, 10s);
+  }
+  .flower-ring.spin-cw{ animation-name: flowerRingSpin; }
+  .flower-ring.spin-ccw{ animation-name: flowerRingSpinReverse; }
+  @keyframes flowerRingSpin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+  @keyframes flowerRingSpinReverse{ from{ transform: rotate(0deg); } to{ transform: rotate(-360deg); } }
+  /* hides the <symbol> definitions themselves — they're never drawn
+     directly, only referenced via <use> below */
+  .flower-defs{ position:absolute; width:0; height:0; overflow:hidden; }
+  /* --n (flowers in this ring) and --r (radius, a vmax translate — scales
+     with the screen itself, not a fixed box) are set per ring in the
+     markup and inherited by every .rf inside it; --i (this flower's own
+     index within the ring) and its color (via CSS `color`, picked up by
+     the symbol's fill="currentColor") are set per flower. */
+  .flower-ring .rf{
+    position:absolute; top:50%; left:50%;
+    width: var(--fs, 3rem); height: var(--fs, 3rem);
+    margin-left: calc(var(--fs, 3rem) * -0.5);
+    margin-top: calc(var(--fs, 3rem) * -0.5);
+    overflow:visible;
+    transform: rotate(calc(var(--i) * (360deg / var(--n)))) translateY(var(--r));
+    filter: drop-shadow(0 2px 3px rgba(51,66,46,.22));
+  }
+  /* the title/progress/Start card floating over the bottom of the flower
+     layer — a solid card (not just text) so it stays legible over
+     whatever busy, brightly-colored part of the spinning tunnel is behind
+     it at any given moment. */
+  .loading-textcard{
     position:relative;
-    font-size: clamp(3.2rem, 14vw, 4.5rem);
-    margin-bottom: .5rem;
-    animation: loadingCakeBob 1.8s ease-in-out infinite;
-  }
-  @keyframes loadingCakeBob{
-    0%,100%{ transform: translateY(0) rotate(0deg); }
-    50%{ transform: translateY(-8px) rotate(-3deg); }
-  }
-  .loading-sparkle{
-    position:absolute;
-    font-size: 1.1rem;
-    animation: loadingTwinkle 1.6s ease-in-out infinite;
-  }
-  .loading-sparkle-a{ top:-6px; left:-14px; animation-delay:.2s; }
-  .loading-sparkle-b{ bottom:2px; right:-16px; animation-delay:.7s; }
-  @keyframes loadingTwinkle{
-    0%,100%{ opacity:.25; transform: scale(.7) rotate(0deg); }
-    50%{ opacity:1; transform: scale(1.15) rotate(15deg); }
+    z-index:2;
+    background: rgba(255,253,248,.9);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 1.3rem 1.5rem 1.5rem;
+    display:flex; flex-direction:column; align-items:center; gap:.5rem;
+    max-width: 340px;
+    width:100%;
   }
   .loading-title{
     font-family:'Pixelify Sans', sans-serif;
-    font-size: clamp(1.1rem, 4.6vw, 1.4rem);
+    font-size: clamp(1.05rem, 4.4vw, 1.3rem);
     color: var(--sage-dark);
-    max-width: 320px;
-    margin: 0 0 1.6rem;
+    margin:0;
   }
   .loading-bar-track{
     width: min(260px, 72vw);
@@ -306,14 +366,16 @@
     height:100%;
     width:0%; /* set from JS as assets actually finish loading */
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--sage-mid), var(--pink-strong), var(--gold));
-    background-size: 200% 100%;
+    /* a full floral spread — coral, gold, sky, lavender, blossom-pink —
+       instead of the site's usual sage/pink pairing, matching the ring above */
+    background: linear-gradient(90deg, var(--coral), var(--gold), var(--sky), var(--lavender), var(--pink-strong));
+    background-size: 300% 100%;
     transition: width .35s ease;
-    animation: loadingShimmer 1.6s linear infinite;
+    animation: loadingShimmer 2.2s linear infinite;
   }
   @keyframes loadingShimmer{
     0%{ background-position: 0% 0; }
-    100%{ background-position: -200% 0; }
+    100%{ background-position: -300% 0; }
   }
   .loading-percent{
     font-weight:700; color:var(--sage-dark);
@@ -323,6 +385,27 @@
     font-size:.85rem; color:var(--text-dark); opacity:.8;
     min-height: 1.2em; /* keeps the layout from jumping as the status line swaps text */
   }
+  /* revealed once loading actually finishes (see finish() in the script) —
+     the flower tunnel above keeps spinning the whole time this sits here,
+     right up until she taps it. Floral coral/gold gradient, matching the
+     ring and progress bar rather than the site's usual sage/pink button. */
+  .loading-start-btn{
+    margin-top: .9rem;
+    padding: 1rem 2.6rem;
+    font-size:1.05rem; font-weight:700;
+    color:var(--white);
+    background: linear-gradient(135deg, var(--coral), var(--gold));
+    border: 3px solid var(--ink);
+    border-radius:999px;
+    box-shadow:4px 4px 0 var(--ink);
+    opacity:0;
+    transform: translateY(10px) scale(.95);
+    transition: opacity .5s ease, transform .5s ease, box-shadow .15s ease;
+    pointer-events:none;
+  }
+  .loading-start-btn.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .loading-start-btn:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
+  .loading-start-btn:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
 
   /* ===================== SCREEN 1: ENVELOPE ===================== */
   /* hand-drawn SVG flipbook: env1 (sealed, ribbon + wax seal) -> env2 (ribbon
@@ -984,12 +1067,140 @@
 
   .sig-divider{ font-family:'Caveat', cursive; font-size:1.2rem; color: var(--sage-dark); opacity:.75; margin-top:.25rem; }
 
+  /* small pixel button under the letter that carries on to the goodbye card below */
+  .final-continue{ margin-top:.4rem; }
+
+  /* ===================== SCREEN 6: GOODBYE CARD =====================
+     Reference: idea.jpeg — a pixel "Will you go out with me?" card: a
+     framed photo, a chunky outlined greeting, one pill button. Reused
+     here as one last card after the letter — ali_cat.jpeg framed like
+     that card's cat icon, and a single "Of course!" button styled just
+     like its YES pill (see .btn-yes below). Tapping it fades everything
+     out and tries to actually close the tab — see closeEverything() in
+     the script. */
+  .bg-glow.accent-goodbye .blob-1{ background: var(--gold); }
+  .bg-glow.accent-goodbye .blob-2{ background: var(--pink-strong); }
+
+  .goodbye-frame{
+    width: clamp(190px, 58vw, 250px);
+    aspect-ratio: 1/1;
+    border-radius: 28px;
+    overflow:hidden;
+    background:#000;
+    border: 4px solid var(--ink);
+    box-shadow: 0 0 0 4px var(--pink-strong), 6px 6px 0 var(--ink);
+  }
+  .goodbye-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .goodbye-title{
+    font-size: clamp(1.5rem, 6.2vw, 2.2rem);
+    color: var(--pink-strong);
+    line-height:1.35;
+    text-shadow: 2px 2px 0 var(--ink), -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink);
+  }
+
+  .btn-yes{
+    padding: 1.05rem 2.4rem;
+    font-size:1.15rem; font-weight:700;
+    color:var(--white);
+    background: linear-gradient(135deg, var(--pink-strong), #d97f92);
+    border: 3px solid var(--ink);
+    border-radius:999px;
+    box-shadow:4px 4px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .5s ease;
+  }
+  .btn-yes:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
+  .btn-yes:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+
+  /* ---------- "Of course!" -> closeEverything() ----------
+     Fades the whole page to black before attempting window.close() —
+     most browsers won't actually close a tab that wasn't opened by
+     script, so this fade IS the "closed" state either way, not just a
+     transition covering for it. */
+  body.closing{ background:#000; transition: background 1s ease; }
+  body.closing #app,
+  body.closing .pixel-scene,
+  body.closing .sparkle-layer,
+  body.closing .sound-toggle,
+  body.closing .scroll-hint{
+    opacity:0;
+    transition: opacity 1s ease;
+    pointer-events:none;
+  }
+
   @media (min-width: 640px){
     .screen{ padding: 3rem 2rem; }
   }
 </style>
 </head>
 <body>
+
+<!-- =======================================================
+     FLOWER SYMBOL DEFINITIONS — three hand-drawn flowers (not emoji) used
+     by the loading screen's spinning tunnel (see .loading-flowers further
+     down): each is layered ellipses radiating from center via rotate(),
+     recolored per-instance through CSS `color` (fill="currentColor"), with
+     a darker/lighter shaded center and petal layer (via CSS filter, not a
+     second color) for a soft, painted look instead of a flat glyph. Never
+     rendered directly — only referenced via <use href="#flower-*"> below.
+     ======================================================= -->
+<svg class="flower-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="flower-bloom" viewBox="0 0 100 100">
+      <!-- fluffy rounded rose/ranunculus: 8 outer petals + 6 inner petals + shaded center -->
+      <g fill="currentColor">
+        <ellipse cx="50" cy="21" rx="15" ry="19"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(45 50 50)"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(90 50 50)"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(135 50 50)"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(180 50 50)"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(225 50 50)"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(270 50 50)"/>
+        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(315 50 50)"/>
+      </g>
+      <g fill="currentColor" style="filter:brightness(1.18)" opacity=".92">
+        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(30 50 50)"/>
+        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(90 50 50)"/>
+        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(150 50 50)"/>
+        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(210 50 50)"/>
+        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(270 50 50)"/>
+        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(330 50 50)"/>
+      </g>
+      <circle cx="50" cy="50" r="9" fill="currentColor" style="filter:brightness(.6)"/>
+      <circle cx="46.5" cy="47" r="3" fill="#fff" opacity=".32"/>
+    </symbol>
+    <symbol id="flower-daisy" viewBox="0 0 100 100">
+      <!-- simple 5-petal blossom with a warm stamen center -->
+      <g fill="currentColor">
+        <ellipse cx="50" cy="24" rx="12" ry="16"/>
+        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(72 50 50)"/>
+        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(144 50 50)"/>
+        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(216 50 50)"/>
+        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(288 50 50)"/>
+      </g>
+      <circle cx="50" cy="50" r="8" fill="currentColor" style="filter:brightness(1.25) saturate(.5)"/>
+      <circle cx="50" cy="50" r="8" fill="#f4c452" opacity=".55"/>
+    </symbol>
+    <symbol id="flower-aster" viewBox="0 0 100 100">
+      <!-- spiky mum/aster: 12 narrow petals + shaded center -->
+      <g fill="currentColor">
+        <ellipse cx="50" cy="22" rx="5" ry="18"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(30 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(60 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(90 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(120 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(150 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(180 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(210 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(240 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(270 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(300 50 50)"/>
+        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(330 50 50)"/>
+      </g>
+      <circle cx="50" cy="50" r="7" fill="currentColor" style="filter:brightness(.6)"/>
+    </symbol>
+  </defs>
+</svg>
 
 <!-- =======================================================
      FIXED PIXEL-ART SCENE — guide-inspired background, sits behind
@@ -1013,25 +1224,90 @@
        SCREEN 0 — LOADING GATE
        Sits in front of everything else the moment the page opens: every
        photo, both fonts, and every sound file get fetched here first, and
-       nothing past this screen is reachable (it's the only ".active" one,
-       and there's no button on it at all) until preloadEverything() in the
-       script below decides they're all ready — see the loading-* rules and
-       runLoadingScreen() for how the cake/progress bar/status line tie into
-       real load progress instead of just a canned animation.
+       nothing past this screen is reachable until preloadEverything() in
+       the script below decides they're all ready — at which point, rather
+       than auto-advancing, "Start" fades in below the flowers (see
+       loading-* rules and runLoadingScreen()/finish() for how the tunnel/
+       progress bar/status line tie into real load progress, and #btnLoadingStart's
+       handler further down for what "Start" actually does).
        ======================================================= -->
   <section class="screen active" id="screen-loading">
+    <!-- (a) SWAP/EDIT: five concentric rings, each flower placed by
+         rotate()+translateY() — see the .loading-flowers comment in the
+         CSS above for how --n/--r/--i/--fs/--dur tie together. Sized in
+         vmax so this fills and bleeds past every edge of the actual
+         screen, not just a small centered medallion. -->
+    <div class="loading-flowers" aria-hidden="true">
+      <div class="flower-ring spin-cw" style="--n:10; --r:-5vmax; --fs:1.3rem; --dur:5s;">
+        <svg class="rf" style="--i:0; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:1; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:2; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:3; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:4; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:5; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:6; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:7; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:8; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:9; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+      </div>
+      <div class="flower-ring spin-ccw" style="--n:12; --r:-9vmax; --fs:1.6rem; --dur:6.5s;">
+        <svg class="rf" style="--i:0; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:1; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:2; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:3; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:4; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:5; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:6; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:7; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:8; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:9; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:10; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:11; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+      </div>
+      <div class="flower-ring spin-cw" style="--n:15; --r:-14vmax; --fs:1.9rem; --dur:8s;">
+        <svg class="rf" style="--i:0; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:1; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:2; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:3; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:4; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:5; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:6; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:7; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:8; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:9; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:10; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:11; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:12; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:13; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:14; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+      </div>
+      <div class="flower-ring spin-ccw" style="--n:18; --r:-19vmax; --fs:2.2rem; --dur:9.5s;">
+        <svg class="rf" style="--i:0; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:1; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:2; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:3; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:4; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:5; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:6; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:7; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:8; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:9; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:10; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:11; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:12; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:13; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:14; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:15; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:16; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:17; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+      </div>
+      <div class="flower-ring spin-cw" style="--n:21; --r:-25vmax; --fs:2.6rem; --dur:11s;">
+        <svg class="rf" style="--i:0; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:1; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:2; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:3; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:4; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:5; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:6; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:7; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:8; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:9; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:10; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:11; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:12; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:13; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:14; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:15; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:16; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:17; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:18; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:19; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:20; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+      </div>
+      <div class="flower-ring spin-ccw" style="--n:24; --r:-31vmax; --fs:3.0rem; --dur:13s;">
+        <svg class="rf" style="--i:0; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:1; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:2; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:3; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:4; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:5; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:6; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:7; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:8; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:9; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:10; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:11; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:12; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:13; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:14; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:15; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:16; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:17; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:18; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:19; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:20; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:21; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:22; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:23; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+      </div>
+      <div class="flower-ring spin-cw" style="--n:27; --r:-37vmax; --fs:3.4rem; --dur:15s;">
+        <svg class="rf" style="--i:0; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:1; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:2; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:3; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:4; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:5; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:6; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:7; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:8; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:9; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:10; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:11; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:12; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:13; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:14; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:15; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:16; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:17; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:18; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:19; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:20; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:21; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:22; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:23; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:24; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:25; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:26; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+      </div>
+      <div class="flower-ring spin-ccw" style="--n:30; --r:-43vmax; --fs:3.8rem; --dur:17s;">
+        <svg class="rf" style="--i:0; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:1; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:2; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:3; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:4; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:5; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:6; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:7; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:8; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:9; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:10; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:11; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:12; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:13; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:14; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:15; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:16; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:17; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:18; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:19; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:20; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:21; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:22; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:23; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:24; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:25; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:26; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:27; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:28; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:29; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+      </div>
+      <div class="flower-ring spin-cw" style="--n:33; --r:-49vmax; --fs:4.2rem; --dur:19s;">
+        <svg class="rf" style="--i:0; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:1; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:2; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:3; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:4; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:5; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:6; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:7; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:8; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:9; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:10; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:11; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:12; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:13; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:14; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:15; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:16; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:17; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:18; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:19; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
+        <svg class="rf" style="--i:20; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:21; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:22; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:23; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:24; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
+        <svg class="rf" style="--i:25; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:26; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:27; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:28; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:29; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+        <svg class="rf" style="--i:30; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:31; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:32; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
+      </div>
+    </div>
     <div class="screen-content">
-      <div class="loading-cake" aria-hidden="true">
-        <span class="loading-sparkle loading-sparkle-a">✨</span>
-        <span class="loading-cake-emoji">🎂</span>
-        <span class="loading-sparkle loading-sparkle-b">✨</span>
+      <div class="loading-textcard">
+        <h1 class="loading-title">Preparing something sweet for <span id="loadingHerName">Allysa</span>…</h1>
+        <div class="loading-bar-track">
+          <div class="loading-bar-fill" id="loadingBarFill"></div>
+        </div>
+        <p class="loading-percent" id="loadingPercent">0%</p>
+        <p class="loading-status" id="loadingStatus">Lighting the candles…</p>
+        <button class="loading-start-btn" id="btnLoadingStart" type="button" hidden>Start</button>
       </div>
-      <h1 class="loading-title">Preparing something sweet for <span id="loadingHerName">Allysa</span>…</h1>
-      <div class="loading-bar-track">
-        <div class="loading-bar-fill" id="loadingBarFill"></div>
-      </div>
-      <p class="loading-percent" id="loadingPercent">0%</p>
-      <p class="loading-status" id="loadingStatus">Lighting the candles…</p>
     </div>
   </section>
 
@@ -1200,6 +1476,30 @@
           <p class="script sig-name">Truly yours.</p>
         </div>
       </div>
+
+      <div class="final-continue fade-in delay-3">
+        <button class="btn-primary" id="btnToGoodbye" type="button">Done?</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       SCREEN 6 — ONE LAST GOODBYE
+       Reference: idea.jpeg (the pixel "Will you go out with me?" card) —
+       ali_cat.jpeg framed like that card's cat icon, a chunky outlined
+       greeting, and a single pill button styled after its YES button (see
+       .btn-yes). Tapping it fades everything out and tries to actually
+       close the tab — see closeEverything() in the script below.
+       ======================================================= -->
+  <section class="screen" id="screen-goodbye">
+    <div class="bg-glow accent-goodbye"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
+    <div class="particles-layer" id="particlesGoodbye"></div>
+    <div class="screen-content">
+      <div class="goodbye-frame fade-in">
+        <img src="ali_cat.jpeg" alt="Allysa and her cat" loading="lazy" decoding="async">
+      </div>
+      <h1 class="goodbye-title fade-in delay-1">Happy birthday!<br>Talk to you soon!</h1>
+      <button class="btn-yes fade-in delay-2" id="btnGoodbyeClose" type="button">Of course!</button>
     </div>
   </section>
 
@@ -1238,6 +1538,13 @@
 <audio id="bgmFinal" src="photograph.mp3" loop preload="none"></audio>
 <audio id="bgmPause" src="be.mp3" preload="none"></audio>
 <audio id="bgmPause2" src="spring.mp3" preload="none"></audio>
+<!-- fallback <audio> elements for clap/wrong — see the SOUND EFFECTS comment
+     further down (playBufferedSfx()): the Web Audio decode is the normal
+     path, these only get used when that fetch() can't run at all, e.g.
+     opening this file straight off disk (file://), which Chrome blocks
+     fetch() for even though a plain <audio> tag loads it fine. -->
+<audio id="sfxClap" src="clap.mp3" preload="auto"></audio>
+<audio id="sfxWrong" src="wrong.mp3" preload="auto"></audio>
 <button class="sound-toggle" id="soundToggle" title="Mute/unmute music">🔊</button>
 <div class="scroll-hint" id="scrollHint" aria-hidden="true">keep scrolling ⌄</div>
 
@@ -1515,39 +1822,56 @@ function playOpenLetterSound(){
 // clap.mp3/wrong.mp3 both start with about a second of dead air (just how
 // those files were downloaded) — skip straight to the 1s mark instead of 0
 // so the sound effect actually lands right when she taps an answer, not a
-// beat late. These two are decoded into Web Audio buffers rather than played
-// as <audio> elements (see loadSfxBuffer()/playBufferedSfx() below) because
-// seeking an <audio> element's currentTime before it's fully buffered is
-// unreliable on mobile — that's what caused the 1s skip to silently not
-// happen on phones even though it worked fine on desktop.
+// beat late. Normal path: decoded into Web Audio buffers (see
+// loadSfxBuffer()/playBufferedSfx() below) and played with a sample-accurate
+// start-offset, because seeking a plain <audio> element's currentTime before
+// it's fully buffered is unreliable on mobile — that's what caused the 1s
+// skip to silently not happen on phones even though it worked fine on
+// desktop. Fallback path: the fetch() that decode needs can't run at all
+// when this file is opened straight off disk (file://) — Chrome blocks
+// fetch()/XHR to local files even though a plain <audio src> tag loads them
+// fine — so playBufferedSfx() below falls back to the sfxClap/sfxWrong
+// <audio> elements (see SOUND EFFECTS markup) with the same 1s seek in that
+// case, rather than going silent.
 const SFX_FILES = { clap: 'clap.mp3', wrong: 'wrong.mp3' };
+const sfxFallbackEls = { clap: document.getElementById('sfxClap'), wrong: document.getElementById('sfxWrong') };
 let sfxBuffers = {};
 function loadSfxBuffer(key, url, onSettle){
   fetch(url)
     .then(r => r.arrayBuffer())
     .then(data => getAudioCtx().decodeAudioData(data))
     .then(buffer => { sfxBuffers[key] = buffer; onSettle(); })
-    .catch(() => onSettle()); // missing/broken file — stay silent, same as every other asset on this page
+    .catch(() => onSettle()); // fetch() unsupported here, or a missing/broken file — playBufferedSfx() falls back below
 }
+// May hold either an AudioBufferSourceNode (has .stop(), no .pause()) or a
+// fallback <audio> element (the reverse) — stopAnswerSfx() below handles both.
 let activeAnswerSfx = null;
 function playBufferedSfx(key, offset){
   if (!soundOn) return;
-  if (activeAnswerSfx){ try { activeAnswerSfx.stop(); } catch(e){} activeAnswerSfx = null; }
+  stopAnswerSfx(); // cut off whichever kind (buffer or <audio>) was still playing from the last question
   const buffer = sfxBuffers[key];
-  if (!buffer) return; // still fetching/decoding (very slow connection) — stay quiet rather than play from the wrong spot
-  const ctx = getAudioCtx();
-  const src = ctx.createBufferSource();
-  src.buffer = buffer;
-  src.connect(ctx.destination);
-  src.start(0, Math.min(offset, Math.max(buffer.duration - 0.01, 0)));
-  activeAnswerSfx = src;
+  if (buffer){
+    const ctx = getAudioCtx();
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(ctx.destination);
+    src.start(0, Math.min(offset, Math.max(buffer.duration - 0.01, 0)));
+    activeAnswerSfx = src;
+    return;
+  }
+  const el = sfxFallbackEls[key];
+  if (!el) return; // still fetching/decoding (very slow connection) and no fallback element — stay quiet rather than play from the wrong spot
+  seekAndPlay(el, offset);
+  activeAnswerSfx = el;
 }
 function playCorrectSound(){ playBufferedSfx('clap', 1); }
 function playWrongSound(){ playBufferedSfx('wrong', 1); }
 // Cuts off any still-playing clap/wrong effect from the question she just
 // answered, so it never bleeds into the next question or the final page.
 function stopAnswerSfx(){
-  if (activeAnswerSfx){ try { activeAnswerSfx.stop(); } catch(e){} activeAnswerSfx = null; }
+  if (!activeAnswerSfx) return;
+  try { activeAnswerSfx.stop ? activeAnswerSfx.stop() : activeAnswerSfx.pause(); } catch(e){}
+  activeAnswerSfx = null;
 }
 // Retries a .play() call if it gets rejected (e.g. a slow/flaky mobile
 // connection hadn't buffered enough yet) instead of silently giving up for
@@ -1660,6 +1984,15 @@ document.getElementById('soundToggle').addEventListener('click', () => {
 let currentQuestionIndex = 0;
 
 function showScreen(id){
+  // One-shot sound effects (the open-letter chime, the correct/wrong clap)
+  // are tied to whichever screen triggered them, not to the page as a
+  // whole — cut them off right here, on every transition, so one never
+  // keeps playing into the next screen no matter which button caused the
+  // jump. Background music (bgmMain/bgmFinal/bgmPause) is deliberately NOT
+  // touched here — that's meant to carry across screens (see
+  // switchToFinalMusic()/startPauseBgm() elsewhere for how that's managed).
+  sfxOpenLetter.pause();
+  stopAnswerSfx();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0); // always start a new screen from the top
@@ -2066,6 +2399,39 @@ document.getElementById('btnQuizPauseContinue').addEventListener('click', () => 
   }
 });
 
+/* ---------- Screen 6: goodbye ---------- */
+document.getElementById('btnToGoodbye').addEventListener('click', () => {
+  playClickSound();
+  showScreen('screen-goodbye');
+  createParticles(document.getElementById('particlesGoodbye'));
+});
+
+// Pauses every track/sfx on the page — used right before closeEverything()
+// below so nothing keeps playing under the fade-to-black.
+function stopAllAudio(){
+  [bgmMain, bgmFinal, bgmPause, bgmPause2, sfxOpenLetter].forEach(el => {
+    try{ el.pause(); } catch(e){}
+  });
+  stopAnswerSfx();
+  stopPauseBgm(false);
+  stopLetterAmbientHearts();
+}
+
+// "Of course!" -> fade the whole page to black, then try to actually close
+// the tab. Most browsers refuse window.close() on a tab they didn't open
+// via script (a security rule, not a bug) — the faded-to-black screen is
+// the fallback "closed" state either way, not just a transition covering
+// for one.
+function closeEverything(){
+  stopAllAudio();
+  document.body.classList.add('closing');
+  setTimeout(() => { window.close(); }, 950);
+}
+document.getElementById('btnGoodbyeClose').addEventListener('click', () => {
+  playClickSound();
+  closeEverything();
+});
+
 /* =====================================================================
    FLOATING PARTICLES (lightweight, CSS-driven) — the heart bursts that
    play on the greeting screen and the final screen.
@@ -2337,7 +2703,7 @@ const LOADING_IMAGES = [
   'group1.jpeg', 'ali2.jpg', 'ali4.jpg', 'ali5.png', 'ali6.png', 'alii_young.png',
   'reyal.jpeg', 'caloy.jpeg', 'chris.jpeg', 'mar.jpeg',
   'dottie.jpeg', 'naj.jpeg', 'sarah3.jpg', 'sarah.jpg',
-  'alii.jpeg', 'jc.jpeg', 'ced.jpeg', 'mark.jpeg', 'alii3.jpeg'
+  'alii.jpeg', 'jc.jpeg', 'ced.jpeg', 'mark.jpeg', 'alii3.jpeg', 'ali_cat.jpeg'
 ];
 
 const LOADING_STATUSES = [
@@ -2381,6 +2747,13 @@ function runLoadingScreen(){
 
   function bump(){
     settled++;
+    // Once finish() has already run (typically the ~15s safety net firing
+    // while one slow file — a multi-MB mp3 on a weak connection — is still
+    // in flight), later stragglers calling bump() must NOT keep touching
+    // the UI: without this guard, a bump() landing after finish() would
+    // recompute the (now-stale) percent-based status text and stomp
+    // "Ready!" back down to "Almost ready…" even though the bar reads 100%.
+    if (finished) return;
     const pct = Math.min(100, Math.round((settled / total) * 100));
     fill.style.width = pct + '%';
     percentEl.textContent = pct + '%';
@@ -2395,9 +2768,13 @@ function runLoadingScreen(){
     fill.style.width = '100%';
     percentEl.textContent = '100%';
     statusEl.textContent = 'Ready!';
-    // a short beat so the bar is visibly full before the screen swaps,
-    // instead of the loader vanishing the instant the last file lands
-    setTimeout(() => showScreen('screen-envelope'), 400);
+    // Doesn't auto-advance — the flower tunnel above keeps spinning, and
+    // "Start" fades in below it; she taps that when she's ready (see its
+    // click handler further down), which is what actually moves on to
+    // screen-envelope.
+    const startBtn = document.getElementById('btnLoadingStart');
+    startBtn.hidden = false;
+    requestAnimationFrame(() => startBtn.classList.add('show'));
   }
 
   LOADING_IMAGES.forEach(src => preloadImage(src, bump));
@@ -2411,10 +2788,18 @@ function runLoadingScreen(){
 
   // Safety net: however far things have gotten, never leave her stuck on
   // this screen for more than ~15s (a flaky connection, a browser that
-  // never fires one of the events above, etc.)
+  // never fires one of the events above, etc.) without a "Start" to tap.
   setTimeout(finish, 15000);
 }
 runLoadingScreen();
+
+// "Start" -> the flower tunnel above has been spinning the whole time it
+// took to load (and kept spinning after, while this button sat waiting for
+// her tap) — this is what finally moves on to the envelope/"Open letter" screen.
+document.getElementById('btnLoadingStart').addEventListener('click', () => {
+  playClickSound();
+  showScreen('screen-envelope');
+});
 </script>
 
 </body>
