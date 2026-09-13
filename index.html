@@ -440,6 +440,7 @@
     width: clamp(160px, 46vw, 210px);
     aspect-ratio: 1/1;
     object-fit: cover;
+    object-position: top; /* ali3.jpg is a tall portrait shot — keep the face in frame instead of centering into the middle of her torso */
     border-radius: 18px;
     border: 3px solid var(--ink);
     box-shadow: 5px 5px 0 var(--ink);
@@ -702,6 +703,16 @@
   .bg-glow.accent-quiz-question .blob-1{ background: var(--blush); }
   .bg-glow.accent-quiz-question .blob-2{ background: var(--gold); }
 
+  /* a cute little handwritten hint above the collage, pointing out that
+     every photo on this page is tappable */
+  .photo-hint{
+    font-family:'Caveat', cursive;
+    font-weight:600;
+    font-size: 1.15rem;
+    color: var(--sage-dark);
+    margin: 0 0 .3rem 0;
+  }
+
   /* photo collage — four polaroids overlapping into one tight cluster,
      with a sticker at the spot where they all converge */
   .final-collage{
@@ -712,20 +723,28 @@
   }
   .polaroid{
     position:absolute;
-    background: var(--white);
-    padding: 6px 6px 14px 6px;
-    border: 2px solid var(--ink);
-    border-radius: 8px;
-    box-shadow: 4px 4px 0 rgba(51,66,46,.35);
     cursor: pointer;
     transition: transform .15s ease;
   }
   .polaroid:hover{ transform: scale(1.05) rotate(0deg); }
   .polaroid img{ width:100%; height:100%; object-fit:cover; border-radius:3px; display:block; }
+  /* the polaroid's "card" look — background/border/shadow — now lives on
+     .flip-face instead of on .polaroid itself, so it shows up on both the
+     front (photo) and back (note) sides once flipped open in preview;
+     see FINAL PAGE PHOTO STACK below for .flip-card-inner/.flip-face. */
+  .polaroid .flip-face{
+    background: var(--white);
+    padding: 6px 6px 14px 6px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 rgba(51,66,46,.35);
+  }
+  .polaroid .flip-back{ padding: .9rem; }
+  .polaroid .flip-front img{ object-position: center; border-radius: 3px; } /* group1.jpeg isn't a tall portrait like her photos, so skip the object-position:top crop .flip-front img sets generically below */
   /* ali2/ali3/ali4 (her photos) get the cream "ribbon polaroid" card color
      instead of plain white, matching .ribbon-frame above — group1.jpeg
      (the two of us) keeps the plain white card. */
-  .polaroid.polaroid-cream{ background: var(--cream); }
+  .polaroid.polaroid-cream .flip-face{ background: var(--cream); }
   /* the main portrait of the cluster (ali2.jpg) gets the actual ribbon bow,
      same sticker as .ribbon-frame — the other two stay plain so the tiny
      overlapping cluster doesn't get too busy. */
@@ -742,10 +761,15 @@
      photo-preview script below), hide the original so it isn't doubled up */
   .polaroid.preview-source-hidden{ opacity:0; pointer-events:none; }
 
-  /* ===================== PHOTO PREVIEW (tap a polaroid to zoom it in) =====================
-     A backdrop dims the page and a clone of the tapped polaroid animates from
-     its exact spot up to a big centered preview; tapping it (or the backdrop)
-     animates it right back down to that same spot before it's removed. */
+  /* ===================== PHOTO PREVIEW (tap a photo to zoom it in) =====================
+     A backdrop dims the page and a clone of the tapped photo animates from
+     its exact spot up to a big centered preview; tapping the backdrop (outside
+     the photo) animates it right back down to that same spot before it's
+     removed. Used for every photo on the final page — the final-collage
+     polaroid AND the final-photo-stack cards (see setupPolaroidPreview() in
+     the script). Every one of them has a note on the back these days, so
+     tapping/swiping the enlarged photo turns it around to read that instead
+     of closing the preview — see .preview-clone-flip below. */
   .preview-backdrop{
     position:fixed; inset:0;
     background: rgba(20,26,18,.72);
@@ -765,12 +789,21 @@
     border-radius: 10px;
     box-shadow: 6px 6px 0 rgba(51,66,46,.4);
     cursor: pointer;
+    perspective: 1000px; /* needed so a flip-card clone's turn-around (below) has real 3D depth */
     transition: left .45s cubic-bezier(.22,.7,.3,1), top .45s cubic-bezier(.22,.7,.3,1),
                 width .45s cubic-bezier(.22,.7,.3,1), height .45s cubic-bezier(.22,.7,.3,1),
                 transform .45s cubic-bezier(.22,.7,.3,1);
     animation: none !important;
   }
   .preview-clone img{ width:100%; height:100%; object-fit:cover; border-radius:5px; display:block; }
+  /* a cloned flip-card already draws its own cream "photo card" frame via
+     .flip-face (front AND back — see the final-page photo stack styles
+     below), so drop the plain-polaroid chrome above or the enlarged photo
+     would show two nested borders. */
+  .preview-clone.preview-clone-flip{
+    background: none; padding: 0; border: none; box-shadow: none;
+  }
+  .preview-clone.flipped .flip-card-inner{ transform: rotateY(180deg); }
 
   /* one shared entrance animation — each polaroid just sets its own --tilt
      angle and animation-delay below, so it fades/scales in and settles at
@@ -935,6 +968,10 @@
   }
   .final-message p{ margin:0 0 .5rem 0; }
   .final-message p:last-child{ margin-bottom:0; }
+  /* letter.txt leaves a full extra blank line before a few of these
+     paragraphs (a deliberate bigger pause, not just the normal one-line
+     gap between paragraphs) — .space-before reproduces that on the page. */
+  .final-message p.space-before{ margin-top: 1.4rem; }
 
   /* signed at the bottom of the letter itself, separated by a soft dashed rule */
   .letter-signoff{
@@ -1053,7 +1090,7 @@
     <div class="bg-glow accent-quiz-intro"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <!-- (a) SWAP/EDIT: the photo shown above the quiz-intro title -->
-      <img class="quiz-icon-image fade-in" src="bai.jpeg" alt="Bai" loading="lazy" decoding="async">
+      <img class="quiz-icon-image fade-in" src="ali3.jpg" alt="Allysa" loading="lazy" decoding="async">
       <h2 class="quiz-intro-title fade-in delay-1">Volume up! Basahon mong maray! HAHAHAH</h2>
       <div class="fade-in delay-2">
         <button class="btn-primary" id="btnStartQuiz">Start</button>
@@ -1117,10 +1154,17 @@
     <div class="particles-layer" id="particlesFinal"></div>
     <div class="screen-content">
 
+      <p class="photo-hint fade-in">🎀 Click on each pictures! 🎀</p>
+
       <!-- (a) SWAP/EDIT: these four photos are placeholders too — swap in whichever
            four you'd like in this little collage. -->
       <div class="final-collage">
-        <div class="polaroid polaroid-1"><img src="group1.jpeg" alt="us" loading="lazy" decoding="async" width="480" height="360"></div>
+        <div class="polaroid polaroid-1">
+          <div class="flip-card-inner">
+            <div class="flip-face flip-front"><img src="group1.jpeg" alt="us" loading="lazy" decoding="async" width="480" height="360"></div>
+            <div class="flip-face flip-back"><p>Wave 113C, you guys are important to me. Lalo na yang naka-red &lt;33</p></div>
+          </div>
+        </div>
       </div>
 
       <h1 class="final-title fade-in delay-1">Happy Birthday, <span id="herNameFinal">Allysa!</span></h1>
@@ -1134,13 +1178,20 @@
         <div class="final-message">
           <p>Hi!</p>
           <p>I hope you're having a good day. Lagi kitang napapanaginipan di ko napansin bigla na lang gumagawa na ako nito hahahah.</p>
-          <p>Anyways, I wish you all the best BFF #3, 1st si Cherry and 2nd si Naj hehe. Pang 3rd ka lang na BFF ko pero lamang ka naman kasi ikaw lang ginawaan ko neto, yii. Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Pero I think I'll give this to you right after nesting, medyo advance sa bday mo pero okay na yan. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
-          <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN! So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan. Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo, tipong gugustuhin ko rin lahat ng favorites mo or at least malaman ko lang ganern. Kaso pag kausp kita ambilis ko mawalan topic pag kausap ka in person kasi heheya aquOh..,, AS IN!! Garo ko bakla ang ayp. So bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pati nga ex ko na parang tanga nikwento ko out of nowhere wtf. Ang cringe ko sa part na yon. Wala talaga ko ma-topic and desperate ako maging interested ka sa mga sinasabi ko HAHAHAH. Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
-          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. Parang gusto ko bugbugin lahat ng bumabadtrip sayo tas mga nang aaway and everything. Gusto ko protektahan lang yang smile mo and magstay ka lang na ganiyan. Makita ko lang na naka smile ka, or marinig na tumatawa ka nung trademark mo na tawa na may singhot at pusngak, sa loob loob ko ang saya ko na rin. Kahit di ako kasali pag nag uusap tas naglalaro kayo, nagtataklob na lang ako ng jacket or pumapasok sa t-shirt ko para di makita na naka smile na rin ako HAHAHAH. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Ang hirap kasi eh mas malaki ka sakin pero nakukyutan akong masyado sayo, legit. Di ko nga kaya kahit magjoke lang na hindi ka cute eh, ang herap hahahah. Iba epekto ng cuteness mo sa akin beh, parang binabalik niya ko sa pagka-bata na walang inatupag kundi magpakasaya lang tas walang problema ganun. Dun pa lang alam ko nang dapat ikeep and angkinin na kita HAHAHAH kaso shet cnu b nmn aquOhh.,?? Konting seriously mode lang, alam kong di ko ikaw deserve, aww. Masyado akong makasalanan and masyadong demonyo para sayo, lam ko yan. Di ko deserve mafeel yung happiness and excitement na nafefeel ko sayo. Kaya wala rin naman akong inaasahan, AWWW. Matagal ko nang napagtanto na solo akong tatanda (char samahan mo ako). Pero, damn. I really love thinking, no, imagining, all the things that we could be. The places that we would go to, the things that we would do, the house that we're gonna have, how happy we would be. Pero I know that it's going to be super selfish. Kasi ako lang yung magiging masaya (siguro). Kaya matagal ko na rin inekisan plano kong kidnappin ka na lang hehe. Kung yung mga crush ko before napapa smile ako, kilig, and all, ikaw naman you make me feel contented and happy with myself. Ganiyan. ~ I like me better when I'm with you, kanta yarn. Parang ayoko nang may makilala pa na iba, ayoko nang magka crush. Ganun! Gusto kitang i-baby lagi kahit mas malaki ka sakin. Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero ganun e. Parang gusto kita piliin lagi, ganun! Yun talaga! Me wants you, but me is not deserve u. ~ But if you give me half a chance I'll show... kanta ulit yarn. Pero bigyan mo lang talaga, charot! Hahahah</p>
-          <p>Hay dami ko ebas gagi, sana di naman creepy huhu. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH. Wala na corny na masyado. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih.</p>
+          <p class="space-before">Anyways, I wish you all the best BFF #3, 1st si Cherry and 2nd si Naj hehe. Pang 3rd ka lang na BFF ko pero lamang ka naman kasi ikaw lang ginawaan ko neto, yii.<br>
+              Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Pero I think I'll give this to you right after nesting, medyo advance sa bday mo pero okay na yan. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
+          <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN!<br>
+              So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan.<br>
+              Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo, tipong gugustuhin ko rin lahat ng favorites mo or at least malaman ko lang para may mapag usapan naman tayo kahit papano, ganun. Kasi naman pag kausp kita ambilis ko mawalan topic lalo pag in person kasi heheya aquOh..,, AS IN!! Garo ko bakla ang ayp.<br>
+              So bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pati nga ex ko na parang tanga nikwento ko out of nowhere wtf. Ang cringe ko sa part na yon. Wala talaga ko ma-topic and desperate ako maging interested ka sa mga sinasabi ko HAHAHAH. Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
+          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. Parang gusto ko bugbugin lahat ng bumabadtrip sayo tas mga nang aaway and everything. Gusto ko protektahan lang yang smile mo and magstay ka lang na ganiyan. Makita ko lang na naka smile ka, or marinig na tumatawa ka nung trademark mo na tawa na may singhot at pusngak, sa loob loob ko ang saya ko na rin. Kahit di ako kasali pag nag uusap tas naglalaro kayo, nagtataklob na lang ako ng jacket or pumapasok sa t-shirt ko para di makita na naka smile na rin ako HAHAHAH. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Ang hirap kasi eh mas malaki ka sakin pero nakukyutan akong masyado sayo, legit. Di ko nga kaya kahit magjoke lang na hindi ka cute eh, ang herap hahahah. Iba epekto ng cuteness mo sa akin beh, parang binabalik niya ko sa pagka-bata na walang inatupag kundi magpakasaya lang tas walang problema ganun. Dun pa lang alam ko nang dapat ikeep and angkinin na kita HAHAHAH kaso shet cnu b nmn aquOhh.,?? Konting seriously mode lang, alam kong di ko ikaw deserve, aww. Masyado akong makasalanan and masyadong demonyo para sayo, lam ko yan. Di ko deserve mafeel yung happiness and excitement na nafefeel ko sayo. Kaya wala rin naman akong inaasahan, AWWW. Matagal ko nang napagtanto na solo akong tatanda (char samahan mo ako). Pero, damn. I really love thinking, no, imagining, all the things that we could be. The places that we would go to, the things that we would do, the house that we're gonna have, how happy we would be. Pero I know that it's going to be super selfish. Kasi ako lang yung magiging masaya (siguro). Kaya matagal ko na rin inekisan plano kong kidnappin ka na lang hehe.  Kung yung mga crush ko before napapa smile ako, kilig, and all, ikaw naman you make me feel contented and happy with myself. Ganiyan. ~ I like me better when I'm with you, kanta yarn. Parang ayoko nang may makilala pa na iba, ayoko nang magka crush. Ganun! Gusto kitang i-baby lagi kahit mas malaki ka sakin. Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero ganun e. Parang gusto kita piliin lagi, ganun! Yun talaga! Me wants you, but me is not deserve u. ~ But if you give me half a chance I'll show... kanta ulit yarn. Pero bigyan mo lang talaga, charot! Hahahah</p>
+          <p>Hay dami ko ebas gagi, sana di naman creepy huhu. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH.<br>
+              Wala na corny na masyado. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih.</p>
           <p>Pero tampo ako sayo hmp. Di mo nireplyan mga reels ko September 9, 2026! Bago mag bday si JC! Pero okay lang naman busy naman ako gumawa nito so walang time for reels.</p>
-          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. DI NGA KITA CRUSH, DAPAT BILHAN NA KITA SINGSING. GANUN! HAHAHAHAHA. Charot ang aggressive grabe. I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.</p>
-          <p>I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo! That's all for today. Please remember that you can always give me a call/text back if you have any other more concerns. You can also send me your feedback about the service I had provided you today through Instagram or Facebook, 5 hearts being the highest (YES!!!) and 1 being the lowest (no). The website would be the link you used to open this letter. Thank you for letting me assist you today, please give me some of your time in exchange for all of mine. My name is Adi, hoping to see you soon.</p>
+          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. DI NGA KITA CRUSH, DAPAT BILHAN NA KITA SINGSING. GANUN! HAHAHAHAHA. Charot ang aggressive grabe. Sabi ko walang edit edit to, wala talaga. Nagdadagdag lang ako kapag may naiisip ako sabihin. So eto, I like you. I was just afraid to admit that to myself kasi baka ireject mo ko or ifriendzone. But fuck that shit bro. I don't care at this point. I need you to know I like you. You're special (child) to me. I wanna make myself better for you. You deserve the best, so I will become the best. WOAH! HAHAHAH. Sana wala kang kalandian (I can treat you better), sana di mo na namimiss yung nang ghost sayo (di natin siya bati), sana ako na lang gawin mong crush mo (kasi oo na nga crush nga kita), and please don't be in love with someone else (Taylor Sheesh). Pero ikaw, alangan naman pilitin kita di ba? (AKO NA LANG KASI char). Once again, I really like you Allysa. All love songs I hear suddenly became about you. I really want to know you more. I care about you, big time. It's such a shame that I'm an insecure lil' bitch that does not have the courage to tell you all of this in person, tsaka baka macreepyhan ka, so valid yan! Hehe. Butttt, you don't have to feel the same. My feelings for you will not be lessen for it. I just want you to know that there's someone out there (me) that cares about you deeply. Liking me back does not really matter, I like you, a loooot. Now you know it, that's what matters.</p>
+          <p class="space-before">I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.<br>
+              I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo!<br>
+              That's all for today. Please remember that you can always give me a call/text back if you have any other more concerns. You can also send me your feedback about the service I had provided you today through Instagram or Facebook, 5 hearts being the highest (YES!!!) and 1 being the lowest (no). The website would be the link you used to open this letter. Thank you for letting me assist you today, please give me some of your time in exchange for all of mine. My name is Adi, hoping to see you soon.</p>
         </div>
 
         <!-- signature now lives inside the letter itself, signed at the bottom -->
@@ -1972,7 +2023,7 @@ function goToFinalReveal(){
   setTimeout(() => {
     showScreen('screen-final');
     createParticles(document.getElementById('particlesFinal'));
-  }, 1900);
+  }, 5000);
 }
 
 /* ---------- Modal "Next" leads to next question, a pause, or the final page ---------- */
@@ -2136,24 +2187,31 @@ function createSparkles(container, count){
 createSparkles(document.getElementById('sparkleLayer'));
 
 /* =====================================================================
-   PHOTO PREVIEW — tap any polaroid on the final page to blow it up into
-   a big centered preview that grows right out of its own spot; tap it
-   (or the dimmed backdrop) again and it shrinks back down into that
-   exact same spot instead of just fading away.
+   PHOTO PREVIEW — tap any photo on the final page to blow it up into a
+   big centered preview that grows right out of its own spot. A plain
+   polaroid (the final-collage photo) shrinks back down on a second tap,
+   same as before. A flip-card (the final-photo-stack photos, which have
+   a note on the back — see FINAL_PHOTOS/renderFinalPhotoStack() below)
+   instead turns around on tap/swipe to show that note; tapping the
+   dimmed backdrop — outside the photo — is what shrinks it back down.
+   attachFinalPhotoPreview() is exposed so renderFinalPhotoStack() can
+   wire up each card as it's created (it runs after this IIFE).
    ===================================================================== */
+let attachFinalPhotoPreview; // assigned below, used by renderFinalPhotoStack()
 (function setupPolaroidPreview(){
-  let activeSource = null; // the real .polaroid currently hidden behind its clone
+  let activeSource = null; // the real photo currently hidden behind its clone
 
   function openPreview(source){
     if (activeSource) return; // one at a time
     activeSource = source;
 
+    const hasBack = !!source.querySelector('.flip-back'); // group1's polaroid and every final-photo-stack card have a note on the back
     const rect = source.getBoundingClientRect();
     const backdrop = document.createElement('div');
     backdrop.className = 'preview-backdrop';
 
     const clone = source.cloneNode(true);
-    clone.className = 'preview-clone';
+    clone.className = 'preview-clone' + (hasBack ? ' preview-clone-flip' : '');
     clone.style.animation = 'none';
     clone.style.left = rect.left + 'px';
     clone.style.top = rect.top + 'px';
@@ -2184,8 +2242,17 @@ createSparkles(document.getElementById('sparkleLayer'));
     });
 
     const closeHandler = () => closePreview(source, clone, backdrop, rect);
-    clone.addEventListener('click', closeHandler);
     backdrop.addEventListener('click', closeHandler);
+
+    if (hasBack){
+      // tapping (or swiping — touchend fires either way) the enlarged photo
+      // turns it around to read the note instead of closing the preview
+      const toggleFlip = () => clone.classList.toggle('flipped');
+      clone.addEventListener('click', toggleFlip);
+      clone.addEventListener('touchend', e => { e.preventDefault(); toggleFlip(); }); // preventDefault so this doesn't also fire a ghost click and flip twice
+    } else {
+      clone.addEventListener('click', closeHandler);
+    }
   }
 
   function closePreview(source, clone, backdrop, rect){
@@ -2208,23 +2275,27 @@ createSparkles(document.getElementById('sparkleLayer'));
     setTimeout(finish, 550); // safety net in case transitionend doesn't fire
   }
 
-  document.querySelectorAll('.final-collage .polaroid').forEach(polaroid => {
-    polaroid.addEventListener('click', () => openPreview(polaroid));
-  });
+  attachFinalPhotoPreview = source => source.addEventListener('click', () => openPreview(source));
+  document.querySelectorAll('.final-collage .polaroid').forEach(attachFinalPhotoPreview);
 })();
 
 /* =====================================================================
    FINAL PAGE — "ALI" PHOTO STACK (replaces the old kiss-stamp stickers
    from her reference screenshot with actual photos of her, fanned above
-   the letter — see .final-photo-stack/.flip-card above). Each card flips
-   over on tap to show a little note on the back.
+   the letter — see .final-photo-stack/.flip-card above). Each card zooms
+   into a big centered preview on tap (see attachFinalPhotoPreview() in
+   the PHOTO PREVIEW script above), same as the final-collage photo —
+   tapping/swiping the enlarged photo turns it around to show the note
+   on the back; tapping outside it shrinks it back down.
    (a) EDIT: add/remove photos here — expect more of these later, so just
    append another { src, alt, backText } entry, nothing else needs to change.
    ===================================================================== */
 const FINAL_PHOTOS = [
-  { src: "ali2.jpg", alt: "Allysa", backText: "(d) EDIT: write her a little note for the back of this photo" },
-  { src: "ali3.jpg", alt: "Allysa", backText: "(d) EDIT: write her a little note for the back of this photo" },
-  { src: "ali4.jpg", alt: "Allysa", backText: "(d) EDIT: write her a little note for the back of this photo" }
+  { src: "ali2.jpg", alt: "Allysa", backText: "Wala akong pictures mo nag screenshot na lang ako sa ig and fb lol" },
+  { src: "ali4.jpg", alt: "Allysa", backText: "Oha, pak! Sakit batok pose yarn? HAHAHAH" },
+  { src: "ali5.png", alt: "Allysa", backText: "Taray talaga oh! Deyummmm! U with ur resting b*$%#h face! <33" },
+  { src: "ali6.png", alt: "Allysa", backText: "U look good af here! My heart pounded like brrt brrt boom boom ugh shet ugh shet <33" },
+  { src: "alii_young.png", alt: "Allysa", backText: "Cuteee! Sana matagal na tayo nagkakilala para nagkita na tayo ng mga bata pa tayo hayst. Kalungkot tuloy nakita mo ko matandang dugyot na huhu" }
 ];
 
 function renderFinalPhotoStack(){
@@ -2238,7 +2309,7 @@ function renderFinalPhotoStack(){
         <div class="flip-face flip-back"><p></p></div>
       </div>`;
     card.querySelector('.flip-back p').textContent = photo.backText; // textContent, not innerHTML — so a note with < or & in it can't break the markup
-    card.addEventListener('click', () => card.classList.toggle('flipped'));
+    attachFinalPhotoPreview(card);
     stack.appendChild(card);
   });
 }
@@ -2262,8 +2333,8 @@ renderFinalPhotoStack();
 // above) so they're preloaded separately via SFX_FILES, also in runLoadingScreen().
 const LOADING_IMAGES = [
   'env1.svg', 'env2.svg', 'env3.svg',
-  HER_PHOTO_SRC, 'bai.jpeg',
-  'group1.jpeg', 'ali2.jpg', 'ali3.jpg', 'ali4.jpg',
+  HER_PHOTO_SRC, 'ali3.jpg',
+  'group1.jpeg', 'ali2.jpg', 'ali4.jpg', 'ali5.png', 'ali6.png', 'alii_young.png',
   'reyal.jpeg', 'caloy.jpeg', 'chris.jpeg', 'mar.jpeg',
   'dottie.jpeg', 'naj.jpeg', 'sarah3.jpg', 'sarah.jpg',
   'alii.jpeg', 'jc.jpeg', 'ced.jpeg', 'mark.jpeg', 'alii3.jpeg'
