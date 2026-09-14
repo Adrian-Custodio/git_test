@@ -263,94 +263,35 @@
   .scroll-hint.show{ display:flex; }
   @keyframes bounceHint{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(5px); } }
 
-  /* ===================== SCREEN 0: LOADING GATE =====================
-     Reference: idea.mp4 ~0:07–0:17 — the tunnel of overlapping flowers
-     fills the ENTIRE screen and keeps growing/spinning, edge to edge, not
-     a small medallion floating in empty space. .loading-flowers below is a
-     fixed full-bleed layer behind everything else on this screen (same
-     pattern as .pixel-scene/.sparkle-layer elsewhere): five concentric
-     rings (one wrapper per ring), each flower placed by rotate(angle)
-     translateY(-radius) — the standard "around a circle" trick — sized in
-     vmax so the whole assembly scales with the actual screen and bleeds
-     past every edge exactly like the reference's fully-zoomed flower wall,
-     each ring spinning at its own speed and alternating direction so it
-     reads as one churning vortex instead of a flat carousel. It's a plain
-     infinite CSS animation with no fixed timer, so it only ever stops
-     because the screen itself gets hidden — which now only happens once
-     she taps "Start" in the card floating over the bottom of it (see
-     .loading-textcard below) once loading actually finishes (see
-     runLoadingScreen()'s finish() further down) — so the flowers keep
-     filling the screen and turning the whole time that button is up too.
-     Deliberately NOT the site's usual sage/pink pairing (per the brief) —
-     a warm neutral backdrop with a bright center lets the flowers
-     themselves carry the color instead. */
-  #screen-loading{
-    background: linear-gradient(160deg, #fbf6ea 0%, #f7ecf3 50%, #eef1fb 100%);
-    overflow:hidden; /* clips the flower rings' vmax-sized bleed to the screen */
-  }
-  .loading-flowers{
-    position:absolute; inset:0;
-    z-index:0;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; /* clips the rings' vmax-sized bleed to this screen's own box */
-    pointer-events:none;
-    /* a bright "tunnel opening" glow at the center, fading out toward the
-       edges, so the innermost flowers read as receding into the light */
-    background: radial-gradient(circle, #fffdf8 0%, #fdf6ea 30%, rgba(253,246,234,0) 68%);
-    animation: loadingBloomPulse 5.5s ease-in-out infinite;
-  }
-  @keyframes loadingBloomPulse{
-    0%,100%{ transform: scale(1); }
-    50%{ transform: scale(1.08); }
-  }
-  .flower-ring{
-    position:absolute; inset:0;
-    animation-timing-function:linear;
-    animation-iteration-count:infinite;
-    animation-duration: var(--dur, 10s);
-  }
-  .flower-ring.spin-cw{ animation-name: flowerRingSpin; }
-  .flower-ring.spin-ccw{ animation-name: flowerRingSpinReverse; }
-  @keyframes flowerRingSpin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
-  @keyframes flowerRingSpinReverse{ from{ transform: rotate(0deg); } to{ transform: rotate(-360deg); } }
-  /* hides the <symbol> definitions themselves — they're never drawn
-     directly, only referenced via <use> below */
-  .flower-defs{ position:absolute; width:0; height:0; overflow:hidden; }
-  /* --n (flowers in this ring) and --r (radius, a vmax translate — scales
-     with the screen itself, not a fixed box) are set per ring in the
-     markup and inherited by every .rf inside it; --i (this flower's own
-     index within the ring) and its color (via CSS `color`, picked up by
-     the symbol's fill="currentColor") are set per flower. */
-  .flower-ring .rf{
-    position:absolute; top:50%; left:50%;
-    width: var(--fs, 3rem); height: var(--fs, 3rem);
-    margin-left: calc(var(--fs, 3rem) * -0.5);
-    margin-top: calc(var(--fs, 3rem) * -0.5);
-    overflow:visible;
-    transform: rotate(calc(var(--i) * (360deg / var(--n)))) translateY(var(--r));
-    filter: drop-shadow(0 2px 3px rgba(51,66,46,.22));
-  }
-  /* the title/progress/Start card floating over the bottom of the flower
-     layer — a solid card (not just text) so it stays legible over
-     whatever busy, brightly-colored part of the spinning tunnel is behind
-     it at any given moment. */
-  .loading-textcard{
+  /* ===================== SCREEN 0: LOADING GATE ===================== */
+  #screen-loading{ background: linear-gradient(160deg, #fbf6ea 0%, #f7ecf3 50%, #eef1fb 100%); }
+  .loading-cake{
     position:relative;
-    z-index:2;
-    background: rgba(255,253,248,.9);
-    border: 3px solid var(--ink);
-    border-radius: 20px;
-    box-shadow: 5px 5px 0 var(--ink);
-    padding: 1.3rem 1.5rem 1.5rem;
-    display:flex; flex-direction:column; align-items:center; gap:.5rem;
-    max-width: 340px;
-    width:100%;
+    font-size: clamp(3.2rem, 14vw, 4.5rem);
+    margin-bottom: .5rem;
+    animation: loadingCakeBob 1.8s ease-in-out infinite;
+  }
+  @keyframes loadingCakeBob{
+    0%,100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-8px) rotate(-3deg); }
+  }
+  .loading-sparkle{
+    position:absolute;
+    font-size: 1.1rem;
+    animation: loadingTwinkle 1.6s ease-in-out infinite;
+  }
+  .loading-sparkle-a{ top:-6px; left:-14px; animation-delay:.2s; }
+  .loading-sparkle-b{ bottom:2px; right:-16px; animation-delay:.7s; }
+  @keyframes loadingTwinkle{
+    0%,100%{ opacity:.25; transform: scale(.7) rotate(0deg); }
+    50%{ opacity:1; transform: scale(1.15) rotate(15deg); }
   }
   .loading-title{
     font-family:'Pixelify Sans', sans-serif;
-    font-size: clamp(1.05rem, 4.4vw, 1.3rem);
+    font-size: clamp(1.1rem, 4.6vw, 1.4rem);
     color: var(--sage-dark);
-    margin:0;
+    max-width: 320px;
+    margin: 0 0 1.6rem;
   }
   .loading-bar-track{
     width: min(260px, 72vw);
@@ -380,10 +321,6 @@
   .loading-percent{
     font-weight:700; color:var(--sage-dark);
     margin: .6rem 0 .2rem;
-  }
-  .loading-status{
-    font-size:.85rem; color:var(--text-dark); opacity:.8;
-    min-height: 1.2em; /* keeps the layout from jumping as the status line swaps text */
   }
   /* revealed once loading actually finishes (see finish() in the script) —
      the flower tunnel above keeps spinning the whole time this sits here,
@@ -1136,73 +1073,6 @@
 <body>
 
 <!-- =======================================================
-     FLOWER SYMBOL DEFINITIONS — three hand-drawn flowers (not emoji) used
-     by the loading screen's spinning tunnel (see .loading-flowers further
-     down): each is layered ellipses radiating from center via rotate(),
-     recolored per-instance through CSS `color` (fill="currentColor"), with
-     a darker/lighter shaded center and petal layer (via CSS filter, not a
-     second color) for a soft, painted look instead of a flat glyph. Never
-     rendered directly — only referenced via <use href="#flower-*"> below.
-     ======================================================= -->
-<svg class="flower-defs" aria-hidden="true" focusable="false">
-  <defs>
-    <symbol id="flower-bloom" viewBox="0 0 100 100">
-      <!-- fluffy rounded rose/ranunculus: 8 outer petals + 6 inner petals + shaded center -->
-      <g fill="currentColor">
-        <ellipse cx="50" cy="21" rx="15" ry="19"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(45 50 50)"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(90 50 50)"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(135 50 50)"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(180 50 50)"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(225 50 50)"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(270 50 50)"/>
-        <ellipse cx="50" cy="21" rx="15" ry="19" transform="rotate(315 50 50)"/>
-      </g>
-      <g fill="currentColor" style="filter:brightness(1.18)" opacity=".92">
-        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(30 50 50)"/>
-        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(90 50 50)"/>
-        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(150 50 50)"/>
-        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(210 50 50)"/>
-        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(270 50 50)"/>
-        <ellipse cx="50" cy="29" rx="10" ry="13" transform="rotate(330 50 50)"/>
-      </g>
-      <circle cx="50" cy="50" r="9" fill="currentColor" style="filter:brightness(.6)"/>
-      <circle cx="46.5" cy="47" r="3" fill="#fff" opacity=".32"/>
-    </symbol>
-    <symbol id="flower-daisy" viewBox="0 0 100 100">
-      <!-- simple 5-petal blossom with a warm stamen center -->
-      <g fill="currentColor">
-        <ellipse cx="50" cy="24" rx="12" ry="16"/>
-        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(72 50 50)"/>
-        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(144 50 50)"/>
-        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(216 50 50)"/>
-        <ellipse cx="50" cy="24" rx="12" ry="16" transform="rotate(288 50 50)"/>
-      </g>
-      <circle cx="50" cy="50" r="8" fill="currentColor" style="filter:brightness(1.25) saturate(.5)"/>
-      <circle cx="50" cy="50" r="8" fill="#f4c452" opacity=".55"/>
-    </symbol>
-    <symbol id="flower-aster" viewBox="0 0 100 100">
-      <!-- spiky mum/aster: 12 narrow petals + shaded center -->
-      <g fill="currentColor">
-        <ellipse cx="50" cy="22" rx="5" ry="18"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(30 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(60 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(90 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(120 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(150 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(180 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(210 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(240 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(270 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(300 50 50)"/>
-        <ellipse cx="50" cy="22" rx="5" ry="18" transform="rotate(330 50 50)"/>
-      </g>
-      <circle cx="50" cy="50" r="7" fill="currentColor" style="filter:brightness(.6)"/>
-    </symbol>
-  </defs>
-</svg>
-
-<!-- =======================================================
      FIXED PIXEL-ART SCENE — guide-inspired background, sits behind
      every screen: drifting clouds + jagged 8-bit hill skyline.
      ======================================================= -->
@@ -1226,88 +1096,24 @@
        photo, both fonts, and every sound file get fetched here first, and
        nothing past this screen is reachable until preloadEverything() in
        the script below decides they're all ready — at which point, rather
-       than auto-advancing, "Start" fades in below the flowers (see
-       loading-* rules and runLoadingScreen()/finish() for how the tunnel/
-       progress bar/status line tie into real load progress, and #btnLoadingStart's
-       handler further down for what "Start" actually does).
+       than auto-advancing, "Start" fades in below the cake (see loading-*
+       rules and runLoadingScreen()/finish() for how the bar/status line tie
+       into real load progress, and #btnLoadingStart's handler further down
+       for what "Start" actually does).
        ======================================================= -->
   <section class="screen active" id="screen-loading">
-    <!-- (a) SWAP/EDIT: five concentric rings, each flower placed by
-         rotate()+translateY() — see the .loading-flowers comment in the
-         CSS above for how --n/--r/--i/--fs/--dur tie together. Sized in
-         vmax so this fills and bleeds past every edge of the actual
-         screen, not just a small centered medallion. -->
-    <div class="loading-flowers" aria-hidden="true">
-      <div class="flower-ring spin-cw" style="--n:10; --r:-5vmax; --fs:1.3rem; --dur:5s;">
-        <svg class="rf" style="--i:0; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:1; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:2; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:3; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:4; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:5; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:6; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:7; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:8; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:9; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-      </div>
-      <div class="flower-ring spin-ccw" style="--n:12; --r:-9vmax; --fs:1.6rem; --dur:6.5s;">
-        <svg class="rf" style="--i:0; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:1; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:2; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:3; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:4; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:5; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:6; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:7; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:8; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:9; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:10; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:11; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-      </div>
-      <div class="flower-ring spin-cw" style="--n:15; --r:-14vmax; --fs:1.9rem; --dur:8s;">
-        <svg class="rf" style="--i:0; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:1; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:2; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:3; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:4; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:5; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:6; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:7; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:8; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:9; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:10; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:11; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:12; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:13; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:14; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-      </div>
-      <div class="flower-ring spin-ccw" style="--n:18; --r:-19vmax; --fs:2.2rem; --dur:9.5s;">
-        <svg class="rf" style="--i:0; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:1; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:2; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:3; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:4; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:5; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:6; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:7; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:8; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:9; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:10; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:11; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:12; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:13; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:14; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:15; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:16; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:17; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-      </div>
-      <div class="flower-ring spin-cw" style="--n:21; --r:-25vmax; --fs:2.6rem; --dur:11s;">
-        <svg class="rf" style="--i:0; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:1; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:2; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:3; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:4; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:5; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:6; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:7; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:8; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:9; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:10; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:11; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:12; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:13; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:14; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:15; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:16; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:17; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:18; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:19; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:20; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-      </div>
-      <div class="flower-ring spin-ccw" style="--n:24; --r:-31vmax; --fs:3.0rem; --dur:13s;">
-        <svg class="rf" style="--i:0; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:1; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:2; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:3; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:4; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:5; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:6; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:7; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:8; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:9; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:10; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:11; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:12; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:13; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:14; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:15; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:16; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:17; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:18; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:19; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:20; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:21; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:22; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:23; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-      </div>
-      <div class="flower-ring spin-cw" style="--n:27; --r:-37vmax; --fs:3.4rem; --dur:15s;">
-        <svg class="rf" style="--i:0; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:1; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:2; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:3; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:4; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:5; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:6; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:7; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:8; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:9; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:10; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:11; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:12; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:13; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:14; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:15; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:16; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:17; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:18; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:19; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:20; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:21; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:22; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:23; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:24; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:25; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:26; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-      </div>
-      <div class="flower-ring spin-ccw" style="--n:30; --r:-43vmax; --fs:3.8rem; --dur:17s;">
-        <svg class="rf" style="--i:0; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:1; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:2; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:3; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:4; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:5; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:6; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:7; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:8; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:9; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:10; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:11; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:12; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:13; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:14; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:15; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:16; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:17; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:18; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:19; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:20; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:21; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:22; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:23; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:24; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:25; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:26; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:27; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:28; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:29; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-      </div>
-      <div class="flower-ring spin-cw" style="--n:33; --r:-49vmax; --fs:4.2rem; --dur:19s;">
-        <svg class="rf" style="--i:0; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:1; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:2; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:3; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:4; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:5; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:6; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:7; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:8; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:9; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:10; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:11; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:12; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:13; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:14; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:15; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:16; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:17; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:18; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:19; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg>
-        <svg class="rf" style="--i:20; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:21; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:22; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:23; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:24; color:#f2a6c5;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg>
-        <svg class="rf" style="--i:25; color:#eda15b;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:26; color:#a98fd9;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg><svg class="rf" style="--i:27; color:#7fb3e0;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:28; color:#d94d4d;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:29; color:#e0566b;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-        <svg class="rf" style="--i:30; color:#8fd9c4;" viewBox="0 0 100 100"><use href="#flower-aster"/></svg><svg class="rf" style="--i:31; color:#e8c15a;" viewBox="0 0 100 100"><use href="#flower-bloom"/></svg><svg class="rf" style="--i:32; color:#f7ece0;" viewBox="0 0 100 100"><use href="#flower-daisy"/></svg>
-      </div>
-    </div>
     <div class="screen-content">
-      <div class="loading-textcard">
-        <h1 class="loading-title">Preparing something sweet for <span id="loadingHerName">Allysa</span>…</h1>
-        <div class="loading-bar-track">
-          <div class="loading-bar-fill" id="loadingBarFill"></div>
-        </div>
-        <p class="loading-percent" id="loadingPercent">0%</p>
-        <p class="loading-status" id="loadingStatus">Lighting the candles…</p>
-        <button class="loading-start-btn" id="btnLoadingStart" type="button" hidden>Start</button>
+      <div class="loading-cake" aria-hidden="true">
+        <span class="loading-sparkle loading-sparkle-a">✨</span>
+        <span class="loading-cake-emoji">🎂</span>
+        <span class="loading-sparkle loading-sparkle-b">✨</span>
       </div>
+      <h1 class="loading-title">Wait lang bagal ng data mo, hmp</h1>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill" id="loadingBarFill"></div>
+      </div>
+      <p class="loading-percent" id="loadingPercent">0%</p>
+      <button class="loading-start-btn" id="btnLoadingStart" type="button" hidden>Lezzgaww!</button>
     </div>
   </section>
 
@@ -1455,18 +1261,18 @@
           <p>Hi!</p>
           <p>I hope you're having a good day. Lagi kitang napapanaginipan di ko napansin bigla na lang gumagawa na ako nito hahahah.</p>
           <p class="space-before">Anyways, I wish you all the best BFF #3, 1st si Cherry and 2nd si Naj hehe. Pang 3rd ka lang na BFF ko pero lamang ka naman kasi ikaw lang ginawaan ko neto, yii.<br>
-              Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Pero I think I'll give this to you right after nesting, medyo advance sa bday mo pero okay na yan. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
+              Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Pero I think I'll give this to you right after nesting, not sure, medyo advance sa bday mo pero okay na yan. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
           <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN!<br>
               So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan.<br>
-              Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo, tipong gugustuhin ko rin lahat ng favorites mo or at least malaman ko lang para may mapag usapan naman tayo kahit papano, ganun. Kasi naman pag kausp kita ambilis ko mawalan topic lalo pag in person kasi heheya aquOh..,, AS IN!! Garo ko bakla ang ayp.<br>
-              So bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pati nga ex ko na parang tanga nikwento ko out of nowhere wtf. Ang cringe ko sa part na yon. Wala talaga ko ma-topic and desperate ako maging interested ka sa mga sinasabi ko HAHAHAH. Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
-          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. Parang gusto ko bugbugin lahat ng bumabadtrip sayo tas mga nang aaway and everything. Gusto ko protektahan lang yang smile mo and magstay ka lang na ganiyan. Makita ko lang na naka smile ka, or marinig na tumatawa ka nung trademark mo na tawa na may singhot at pusngak, sa loob loob ko ang saya ko na rin. Kahit di ako kasali pag nag uusap tas naglalaro kayo, nagtataklob na lang ako ng jacket or pumapasok sa t-shirt ko para di makita na naka smile na rin ako HAHAHAH. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Ang hirap kasi eh mas malaki ka sakin pero nakukyutan akong masyado sayo, legit. Di ko nga kaya kahit magjoke lang na hindi ka cute eh, ang herap hahahah. Iba epekto ng cuteness mo sa akin beh, parang binabalik niya ko sa pagka-bata na walang inatupag kundi magpakasaya lang tas walang problema ganun. Dun pa lang alam ko nang dapat ikeep and angkinin na kita HAHAHAH kaso shet cnu b nmn aquOhh.,?? Konting seriously mode lang, alam kong di ko ikaw deserve, aww. Masyado akong makasalanan and masyadong demonyo para sayo, lam ko yan. Di ko deserve mafeel yung happiness and excitement na nafefeel ko sayo. Kaya wala rin naman akong inaasahan, AWWW. Matagal ko nang napagtanto na solo akong tatanda (char samahan mo ako). Pero, damn. I really love thinking, no, imagining, all the things that we could be. The places that we would go to, the things that we would do, the house that we're gonna have, how happy we would be. Pero I know that it's going to be super selfish. Kasi ako lang yung magiging masaya (siguro). Kaya matagal ko na rin inekisan plano kong kidnappin ka na lang hehe.  Kung yung mga crush ko before napapa smile ako, kilig, and all, ikaw naman you make me feel contented and happy with myself. Ganiyan. ~ I like me better when I'm with you, kanta yarn. Parang ayoko nang may makilala pa na iba, ayoko nang magka crush. Ganun! Gusto kitang i-baby lagi kahit mas malaki ka sakin. Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero ganun e. Parang gusto kita piliin lagi, ganun! Yun talaga! Me wants you, but me is not deserve u. ~ But if you give me half a chance I'll show... kanta ulit yarn. Pero bigyan mo lang talaga, charot! Hahahah</p>
-          <p>Hay dami ko ebas gagi, sana di naman creepy huhu. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH.<br>
-              Wala na corny na masyado. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih.</p>
+              Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo, tipong gugustuhin ko rin lahat ng favorites mo or at least malaman ko lang para may mapag usapan naman tayo kahit papano, ganun. Kasi naman pag kausap kita ambilis ko mawalan topic lalo pag in person kasi heheya aquOh..,, AS IN!! Garo ko bakla ang ayp. Pero I really really really want you to tell me about your day everyday, your favorite dish, color, things, movies, hobbies, aything, whatever at all. Disturb me please, tell me about it all. There's nothing I would love more.<br>
+              But baasically nganga ako in person, so bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pati nga ex ko na parang tanga nikwento ko out of nowhere wtf. Ang cringe ko sa part na yon. Wala talaga ko ma-topic and desperate ako maging interested ka sa mga sinasabi ko HAHAHAH. Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
+          <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, lalo pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. There's just something in your voice that's driving me crazy. Speak, laugh, do whatever sound, even just fucking swear idgaf, your voice is really making me breathless! If there's heaven on earth that would be beside you with your scent and lovely voice hihi. Parang gusto ko bugbugin lahat ng bumabadtrip sayo tas mga nang aaway and everything. Gusto ko protektahan lang yang smile mo and magstay ka lang na ganiyan. Makita ko lang na naka smile ka, or marinig na tumatawa ka nung trademark mo na tawa na may singhot at pusngak, sa loob loob ko ang saya ko na rin. Kahit di ako kasali pag nag uusap tas naglalaro kayo, nagtataklob na lang ako ng jacket or pumapasok sa t-shirt ko para di makita na naka smile na rin ako HAHAHAH. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Ang hirap kasi eh mas malaki ka sakin pero nakukyutan akong masyado sayo, legit. Di ko nga kaya kahit magjoke lang na hindi ka cute eh, ang herap hahahah. Iba epekto ng cuteness mo sa akin beh, parang binabalik niya ko sa pagka-bata na walang inatupag kundi magpakasaya lang tas walang problema ganun. Dun pa lang alam ko nang dapat ikeep and angkinin na kita HAHAHAH kaso shet cnu b nmn aquOhh.,?? Konting seriously mode lang, alam kong di ko ikaw deserve, aww. Masyado akong makasalanan and masyadong demonyo para sayo, lam ko yan. Di ko deserve mafeel yung happiness and excitement na nafefeel ko sayo. Kaya wala rin naman akong inaasahan, AWWW. Matagal ko nang napagtanto na solo akong tatanda (char samahan mo ako). Pero, damn. I really love thinking, no, imagining, all the things that we could be. The places that we would go to, the things that we would do, the house that we're gonna have, how happy we would be. Pero I know that it's going to be super selfish. Kasi ako lang yung magiging masaya (siguro). Kaya matagal ko na rin inekisan plano kong kidnappin ka na lang hehe.  Kung yung mga crush ko before napapa smile ako, kilig, and all, ikaw naman you make me feel contented and happy with myself. Ganiyan. ~ I like me better when I'm with you, kanta yarn. Parang ayoko nang may makilala pa na iba, ayoko nang magka crush. Ganun! Gusto kitang i-baby lagi kahit mas malaki ka sakin. Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero ganun e. Parang gusto kita piliin lagi, ganun! Yun talaga! Me wants you, but me is not deserve u. ~ But if you give me half a chance I'll show... kanta ulit yarn. Pero bigyan mo lang talaga, charot! Hahahah. I'm just so happy having these feelings that you give me, not even thinking that you will someday somehow reciprocate them. Just admiring you from afar brings me a lot of joy in itself and again it'll be too selfish of me to even wish for you to feel the same. This is a beautiful thing, this feeling I have for you (plural dapat talaga kasi marami kang pinapafeel), how beautiful it is to admire somebody or even love them without the assurance that they feel the same way about you too. Kunwari na lang happy ako kahit di ako umaasang may chance ako sayo hahahah. But please don't make my feelings go away. Please don't make me go away. Iyak talaga ko neto. Dami kong sinasabi noh? My way of showing you that I'll be the over-explaining to your overthinking.</p>
+          <p>Sana di naman creepy huhu. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH.<br>
+              Wala na corny na masyado. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih. You just got me smiling on my phone too damn much! Sucks because I know this shit's gonna hurt lol.</p>
           <p>Pero tampo ako sayo hmp. Di mo nireplyan mga reels ko September 9, 2026! Bago mag bday si JC! Pero okay lang naman busy naman ako gumawa nito so walang time for reels.</p>
           <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. DI NGA KITA CRUSH, DAPAT BILHAN NA KITA SINGSING. GANUN! HAHAHAHAHA. Charot ang aggressive grabe. Sabi ko walang edit edit to, wala talaga. Nagdadagdag lang ako kapag may naiisip ako sabihin. So eto, I like you. I was just afraid to admit that to myself kasi baka ireject mo ko or ifriendzone. But fuck that shit bro. I don't care at this point. I need you to know I like you. You're special (child) to me. I wanna make myself better for you. You deserve the best, so I will become the best. WOAH! HAHAHAH. Sana wala kang kalandian (I can treat you better), sana di mo na namimiss yung nang ghost sayo (di natin siya bati), sana ako na lang gawin mong crush mo (kasi oo na nga crush nga kita), and please don't be in love with someone else (Taylor Sheesh). Pero ikaw, alangan naman pilitin kita di ba? (AKO NA LANG KASI char). Once again, I really like you Allysa. All love songs I hear suddenly became about you. I really want to know you more. I care about you, big time. It's such a shame that I'm an insecure lil' bitch that does not have the courage to tell you all of this in person, tsaka baka macreepyhan ka, so valid yan! Hehe. Butttt, you don't have to feel the same. My feelings for you will not be lessen for it. I just want you to know that there's someone out there (me) that cares about you deeply. Liking me back does not really matter, I like you, a loooot. Now you know it, that's what matters.</p>
           <p class="space-before">I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.<br>
-              I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo!<br>
+              I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo! (Marami pa kong naka store na reels di ko masend sayo kasi medyo may hiya pa)<br>
               That's all for today. Please remember that you can always give me a call/text back if you have any other more concerns. You can also send me your feedback about the service I had provided you today through Instagram or Facebook, 5 hearts being the highest (YES!!!) and 1 being the lowest (no). The website would be the link you used to open this letter. Thank you for letting me assist you today, please give me some of your time in exchange for all of mine. My name is Adi, hoping to see you soon.</p>
         </div>
 
@@ -1498,8 +1304,8 @@
       <div class="goodbye-frame fade-in">
         <img src="ali_cat.jpeg" alt="Allysa and her cat" loading="lazy" decoding="async">
       </div>
-      <h1 class="goodbye-title fade-in delay-1">Happy birthday!<br>Talk to you soon!</h1>
-      <button class="btn-yes fade-in delay-2" id="btnGoodbyeClose" type="button">Of course!</button>
+      <h1 class="goodbye-title fade-in delay-1">Happy birthday!<br>Text me!</h1>
+      <button class="btn-yes fade-in delay-2" id="btnGoodbyeClose" type="button">Sure thing!</button>
     </div>
   </section>
 
@@ -1682,7 +1488,7 @@ const questions = [
     prompt: "",                        // no separate question text — the equation says it all
     choices: [
       { id: "a", label: "WTF?" },      // (b) EDIT: choice label
-      { id: "b", label: "SIRIT" }      // (b) EDIT: choice label
+      { id: "b", label: "SIRIT!" }      // (b) EDIT: choice label
     ],
     // Trick question: correctChoiceId matches neither "a" nor "b" on purpose,
     // so picking either one always lands on the wrong-answer popup below.
@@ -1703,13 +1509,13 @@ const questions = [
     pauseBefore: {
       image: "alii.jpeg",
       imageAlt: "Allysa singing",
-      note: "You look so happy here. I was so happy as well! Lalo na nung kumakanta ka na, nawala na yung ihi ko kakapigil kasi ayaw ko ma-miss yung pag kanta mo hehehe. Sorry madali maihi pag kenekeleg cguro <33",
+      note: "Allysa! Damn, even your name is sooooo attractive. You look so happy here. I was so happy as well! Lalo na nung kumakanta ka na, nawala na yung ihi ko kakapigil kasi ayaw ko ma-miss yung pag kanta mo hehehe. Sorry madali maihi pag kenekeleg cguro <33",
       bgm: { elementId: "bgmPause", startAt: 10 }
     },
     prompt: "Sino mas pogi? (v2)",     // (b) EDIT: question text
     choices: [
-      { id: "a", image: "jc.jpeg", label: "JC" },   // (a)/(b) EDIT: photo + label
-      { id: "b", image: "ced.jpeg", label: "Ced" }  // (a)/(b) EDIT: photo + label
+      { id: "a", image: "jc.jpeg", label: "JSayyy" },   // (a)/(b) EDIT: photo + label
+      { id: "b", image: "ced.jpeg", label: "Cedrick" }  // (a)/(b) EDIT: photo + label
     ],
     // Trick question: correctChoiceId matches neither "a" nor "b" on purpose,
     // so picking either one always lands on the wrong-answer popup below.
@@ -1734,11 +1540,11 @@ const questions = [
     escalateOnWrong: {
       stages: [
         "YES PLS!",
-        "SIGE NA PLS!!",
+        "SIGE NA PLS!",
         "PAYAG KA NAA!!",
         "SIGE NA PLS HUHU",
-        "LIBRE KO NA!",
-        "SIGE NA PLEASE!!"
+        "LIBRE KO NA SIGE NAA",
+        "YIIIII PAYAG NA YAAAAAN"
       ]
     }
   }
@@ -1771,7 +1577,7 @@ const PAUSE_AFTER_QUIZ = {
   heading: "Pause ulit, read this ulit hihi", // distinct from the default heading Q5's pauseBefore uses, so the two pause screens don't read identically
   image: "alii3.jpeg",
   imageAlt: "Allysa",
-  note: "You look so precious here. Gusto ko na itulak si Shiela para sako ka na lang sumanday hahahahah. Kauyam inggit na inggit ako bwisit. Maski kargahon taka pa ay nako talagang ayos lang hahahahah. Sherkolang, unang beses ko yan tinignan pagkauwi, bagong gising ako. Di ko sadya naopen gallery ko tas may ganiyan palang picture mo. Tangina bumilis tibok ng puso ko ang hayop. Seryosong kakornihan beh. Para akong kinabahan na hindi ko maintindihan. Di ko maexplain. Pero later on, basahin mo kasi itatry ko naman siya iexplain. Brace yourself, you got some more readings to do <33",
+  note: "You look so precious here, Mae. Gusto ko na itulak si Shiela para sako ka na lang sumanday hahahahah. Kauyam inggit na inggit ako bwisit. Maski kargahon taka pa ay nako talagang ayos lang hahahahah. Sherkolang, unang beses ko yan tinignan pagkauwi, bagong gising ako. Di ko sadya naopen gallery ko tas may ganiyan palang picture mo. Tangina bumilis tibok ng puso ko ang hayop. Seryosong kakornihan beh. Para akong kinabahan na hindi ko maintindihan. Di ko maexplain. Pero later on, basahin mo kasi itatry ko naman siya iexplain. Brace yourself, you got some more readings to do <33",
   bgm: { elementId: "bgmPause2", startAt: 12 }
 };
 
@@ -1984,15 +1790,6 @@ document.getElementById('soundToggle').addEventListener('click', () => {
 let currentQuestionIndex = 0;
 
 function showScreen(id){
-  // One-shot sound effects (the open-letter chime, the correct/wrong clap)
-  // are tied to whichever screen triggered them, not to the page as a
-  // whole — cut them off right here, on every transition, so one never
-  // keeps playing into the next screen no matter which button caused the
-  // jump. Background music (bgmMain/bgmFinal/bgmPause) is deliberately NOT
-  // touched here — that's meant to carry across screens (see
-  // switchToFinalMusic()/startPauseBgm() elsewhere for how that's managed).
-  sfxOpenLetter.pause();
-  stopAnswerSfx();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0); // always start a new screen from the top
@@ -2173,11 +1970,15 @@ function renderQuestion(index){
       btn.textContent = choice.label;
     }
     btn.dataset.choiceId = choice.id; // stable hook — used by setupEscalatingChoice() below
-    // Escalating questions (see "escalateOnWrong") wire up their own click
-    // handling further down instead — the "wrong" choice there must never
-    // answer the question, just relabel/grow the correct one.
-    const isEscalatingWrongChoice = q.escalateOnWrong && choice.id !== q.correctChoiceId;
-    if (!isEscalatingWrongChoice){
+    // Escalating questions (see "escalateOnWrong") wire up BOTH choices'
+    // click handling themselves, further down — skip adding a listener here
+    // for either one. (Previously this only skipped the "wrong" choice,
+    // leaving the correct choice with a listener from both here AND from
+    // setupEscalatingChoice() — a double-fire on every "Yes" tap that
+    // double-triggered playCorrectSound(), racing play()/pause() calls on
+    // the same <audio> fallback element and leaving it out of sync with
+    // stopAnswerSfx(), so the clap could bleed into the next screen.)
+    if (!q.escalateOnWrong){
       btn.addEventListener('click', () => handleAnswer(q, choice.id));
     }
     choicesWrap.appendChild(btn);
@@ -2429,6 +2230,10 @@ function closeEverything(){
 }
 document.getElementById('btnGoodbyeClose').addEventListener('click', () => {
   playClickSound();
+  // (a) EDIT: swap this for wherever you'd rather send her on the way out.
+  // Opened in a new tab, right in the click handler (not after any delay),
+  // so it still counts as a user gesture and popup blockers let it through.
+  window.open('https://www.instagram.com/adrianthropic999/', '_blank', 'noopener');
   closeEverything();
 });
 
@@ -2706,14 +2511,6 @@ const LOADING_IMAGES = [
   'alii.jpeg', 'jc.jpeg', 'ced.jpeg', 'mark.jpeg', 'alii3.jpeg', 'ali_cat.jpeg'
 ];
 
-const LOADING_STATUSES = [
-  'Lighting the candles…',
-  'Wrapping the questions…',
-  'Mixing the frosting…',
-  'Sealing the letter…',
-  'Almost ready…'
-];
-
 function preloadImage(src, onSettle){
   const img = new Image();
   img.addEventListener('load', onSettle, { once: true });
@@ -2736,8 +2533,6 @@ function preloadAudioFully(el, onSettle){
 function runLoadingScreen(){
   const fill = document.getElementById('loadingBarFill');
   const percentEl = document.getElementById('loadingPercent');
-  const statusEl = document.getElementById('loadingStatus');
-  document.getElementById('loadingHerName').textContent = HER_NAME;
 
   const audioEls = Array.from(document.querySelectorAll('audio'));
   const sfxKeys = Object.keys(SFX_FILES);
@@ -2747,18 +2542,9 @@ function runLoadingScreen(){
 
   function bump(){
     settled++;
-    // Once finish() has already run (typically the ~15s safety net firing
-    // while one slow file — a multi-MB mp3 on a weak connection — is still
-    // in flight), later stragglers calling bump() must NOT keep touching
-    // the UI: without this guard, a bump() landing after finish() would
-    // recompute the (now-stale) percent-based status text and stomp
-    // "Ready!" back down to "Almost ready…" even though the bar reads 100%.
-    if (finished) return;
     const pct = Math.min(100, Math.round((settled / total) * 100));
     fill.style.width = pct + '%';
     percentEl.textContent = pct + '%';
-    const stageIndex = Math.min(LOADING_STATUSES.length - 1, Math.floor((pct / 100) * LOADING_STATUSES.length));
-    statusEl.textContent = LOADING_STATUSES[stageIndex];
     if (settled >= total) finish();
   }
 
@@ -2767,10 +2553,9 @@ function runLoadingScreen(){
     finished = true;
     fill.style.width = '100%';
     percentEl.textContent = '100%';
-    statusEl.textContent = 'Ready!';
-    // Doesn't auto-advance — the flower tunnel above keeps spinning, and
-    // "Start" fades in below it; she taps that when she's ready (see its
-    // click handler further down), which is what actually moves on to
+    // Doesn't auto-advance — the cake above keeps bobbing, and "Lezzgaww!"
+    // fades in below it; she taps that when she's ready (see its click
+    // handler further down), which is what actually moves on to
     // screen-envelope.
     const startBtn = document.getElementById('btnLoadingStart');
     startBtn.hidden = false;
@@ -2796,6 +2581,11 @@ runLoadingScreen();
 // "Start" -> the flower tunnel above has been spinning the whole time it
 // took to load (and kept spinning after, while this button sat waiting for
 // her tap) — this is what finally moves on to the envelope/"Open letter" screen.
+
+
+
+
+
 document.getElementById('btnLoadingStart').addEventListener('click', () => {
   playClickSound();
   showScreen('screen-envelope');
