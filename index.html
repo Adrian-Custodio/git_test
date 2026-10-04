@@ -115,7 +115,7 @@
       linear-gradient(180deg, #ffe3ec 0%, #fdeef3 30%, #f1f7ee 58%, #d6f0dc 78%, #bfe6c8 100%);
   }
   /* bokeh lights: each one is a blurred radial dot, gently pulsing */
-  .bg-bokeh{ position:absolute; border-radius:50%; filter:blur(2px); opacity:.55; animation: bokehBreathe 7s ease-in-out infinite; }
+  .bg-bokeh{ position:absolute; border-radius:50%; opacity:.55; animation: bokehBreathe 7s ease-in-out infinite; will-change: transform, opacity; }
   .bg-bokeh.pink{ background: radial-gradient(circle, rgba(255,182,206,.9), rgba(255,182,206,0) 70%); }
   .bg-bokeh.mint{ background: radial-gradient(circle, rgba(170,230,186,.9), rgba(170,230,186,0) 70%); }
   .bg-bokeh.gold{ background: radial-gradient(circle, rgba(255,236,170,.95), rgba(255,236,170,0) 70%); }
@@ -126,19 +126,20 @@
   /* fluffy clouds made of stacked soft circles, drifting sideways forever */
   .bg-cloud{
     position:absolute; width:220px; height:60px; border-radius:60px;
-    background: rgba(255,255,255,.75); filter: blur(1px);
+    background: rgba(255,255,255,.75);
+    left:0; will-change: transform;
     animation: cloudDrift linear infinite;
   }
   .bg-cloud::before, .bg-cloud::after{ content:""; position:absolute; background:inherit; border-radius:50%; }
   .bg-cloud::before{ width:90px; height:90px; left:35px; top:-45px; }
   .bg-cloud::after{ width:120px; height:110px; left:95px; top:-60px; }
   .bg-cloud.c1{ top:12%; animation-duration:95s; animation-delay:-30s; }
-  .bg-cloud.c2{ top:28%; transform:scale(.65); animation-duration:130s; animation-delay:-90s; opacity:.8; }
-  @keyframes cloudDrift{ from{ left:-260px; } to{ left:calc(100% + 40px); } }
+  .bg-cloud.c2{ top:28%; width:150px; height:42px; animation-duration:130s; animation-delay:-90s; opacity:.8; }
+  @keyframes cloudDrift{ from{ transform: translateX(-260px); } to{ transform: translateX(calc(100vw + 40px)); } }
   /* the hills + tulips sit pinned to the bottom edge; "slice" keeps flowers
      un-stretched and just crops the sides on narrow phones */
   .bg-hills{ position:absolute; left:0; right:0; bottom:0; width:100%; height:42vh; min-height:220px; }
-  .bg-hills .sway{ transform-box: fill-box; transform-origin: 50% 100%; animation: tulipSway 4s ease-in-out infinite; }
+  .bg-hills .sway{ transform-box: fill-box; transform-origin: 50% 100%; } /* static: animating inside a big SVG repaints all of it each frame */
   @keyframes tulipSway{ 0%,100%{ transform:rotate(-3deg); } 50%{ transform:rotate(3deg); } }
   @media (prefers-reduced-motion: reduce){
     .bg-bokeh, .bg-cloud, .bg-hills .sway{ animation:none; }
@@ -419,16 +420,16 @@
     perspective: 700px;
   }
   .rose-fall{
-    position:absolute; top:0;
+    position:absolute; top:0; contain: layout style;
     animation: roseFall var(--dur) linear var(--delay) both;
     will-change: transform;
   }
   .rose-tumble{
     width:100%; height:100%;
     animation: roseTumble var(--spin) ease-in-out infinite alternate;
-    filter: drop-shadow(0 4px 4px rgba(90,0,15,.25));
+    will-change: transform;
   }
-  .rose-tumble svg{ width:100%; height:100%; display:block; overflow:visible; }
+  .rose-tumble img, .rose-tumble svg{ width:100%; height:100%; display:block; }
   @keyframes roseFall{
     0%  { transform: translate3d(0, -120px, 0); opacity:0; }
     6%  { opacity:1; }
@@ -514,9 +515,10 @@
     margin-top: 0;
     animation: envFloat 3.2s ease-in-out infinite;          /* gentle idle bob */
     transition: margin-top .7s cubic-bezier(.4,0,.2,1) .7s;  /* makes room for the letter */
-    filter: drop-shadow(0 18px 22px rgba(44,74,54,.22));
+    /* (no filter here: a filter flattens the 3D flap and repaints every frame on phones) */
   }
-  .envelope-frames:hover .env-seal{ transform: translate(-50%,-50%) scale(1.07); }
+  .envelope-frames:not(.opened) .env-seal{ animation: sealPulse 1.6s ease-in-out infinite; }
+  @keyframes sealPulse{ 0%,100%{ transform: translate(-50%,-50%) scale(1); } 50%{ transform: translate(-50%,-50%) scale(1.12); } }
   .envelope-frames.opened{ margin-top: 34%; animation:none; }
   @keyframes envFloat{ 0%,100%{ transform:translateY(0) rotate(-1.5deg); } 50%{ transform:translateY(-8px) rotate(1deg); } }
 
@@ -527,10 +529,12 @@
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath d='M11 8c-1.2-2.3-4.5-2.1-4.5.7c0 2.3 2.3 3.5 4.5 5.3c2.2-1.8 4.5-3 4.5-5.3c0-2.8-3.3-3-4.5-.7z' fill='%23ffffff' fill-opacity='.45'/%3E%3C/svg%3E"),
       linear-gradient(180deg, #f7a6bf, #e9819f);
     border: 3px solid var(--ink);
+    box-shadow: 0 18px 28px rgba(44,74,54,.22);   /* soft shadow under the envelope */
   }
 
   /* the letter itself: cream paper with faint ruled lines */
   .env-letter{
+    will-change: transform;
     position:absolute; left:7%; right:7%; top:6%; height:88%; z-index:2;
     border-radius:8px;
     background:
@@ -559,6 +563,7 @@
     position:absolute; left:0; top:0; width:100%; height:60%; z-index:4;
     transform-origin: 50% 0;
     transform-style: preserve-3d;
+    will-change: transform;
     transition: transform .7s cubic-bezier(.5,0,.3,1) .2s, z-index 0s linear .55s;
   }
   .env-flap svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
@@ -933,6 +938,7 @@
   .bg-glow .blob{ position:absolute; border-radius:50%; filter: blur(60px); opacity:.55; animation: blobPulse 6s ease-in-out infinite; }
   .bg-glow .blob-1{ width:260px; height:260px; background: var(--sage); top:-70px; left:-70px; }
   .bg-glow .blob-2{ width:220px; height:220px; background: var(--cherry-blossom); bottom:-50px; right:-60px; animation-delay:-3s; }
+  @media (max-width: 700px){ .bg-glow .blob{ animation:none; } }
   @keyframes blobPulse{
     0%,100%{ transform:scale(1); opacity:.5; }
     50%{ transform:scale(1.15); opacity:.68; }
@@ -1495,6 +1501,115 @@
   @media (min-width: 640px){
     .screen{ padding: 3rem 2rem; }
   }
+
+  /* =====================================================================
+     PHOTO FITTING (phone-first) — every photo is tagged with its real shape
+     by the script (data-orient = portrait / landscape / square), and each
+     spot sizes it by that shape instead of forcing one box on everything:
+       - tall photos stand tall, wide photos lie wide, square stay square
+       - nothing is stretched, and big crops only happen where a fixed
+         shape is the point (the round greeting photo, the photo stack)
+     ===================================================================== */
+
+  /* --- single question photo: natural shape, sized to fit a phone screen --- */
+  .question-image{
+    aspect-ratio:auto; object-fit:contain;
+    width:auto; height:auto;
+    max-width: min(340px, 86vw);
+    max-height: min(46vh, 420px);
+    background: var(--cream);
+  }
+  .question-image[data-orient="portrait"]{ height: min(46vh, 420px); width:auto; }
+  .question-image[data-orient="landscape"]{ width: min(360px, 88vw); height:auto; max-height:none; }
+  .question-image[data-orient="square"]{ width: min(290px, 74vw); height:auto; }
+
+  /* --- equation question: three photos side by side, "equals???" below --- */
+  .equation-row{
+    flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:center;
+    gap: .35rem .3rem; width:100%;
+  }
+  .equation-row img{
+    width: calc((min(100vw, 480px) - 2.5rem - 5.2rem) / 3);
+    max-width: 130px;
+    aspect-ratio: 3/4; object-fit:cover; object-position: 50% 25%;
+    border-radius: 12px; border-width:2px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .equation-row .equation-sign:not(.equation-equals){ font-size: clamp(1.3rem, 5.5vw, 1.8rem); width:1.1rem; justify-content:center; display:flex; }
+  .equation-row .equation-equals{ flex-basis:100%; text-align:center; margin-top:.35rem; }
+
+  /* --- picture choices: equal cards; a photo that's very tall or very wide
+         is shown whole over a soft blurred copy of itself instead of being
+         chopped into a square --- */
+  .choices:has(.choice-picture-btn){ gap: .7rem; flex-wrap:nowrap; }   /* the two picture choices sit side by side */
+  .choice-picture-btn{ width: calc(50% - .35rem); max-width: 190px; padding:.5rem; }
+  .choice-img-box{
+    position:relative; display:block; width:100%; aspect-ratio: 4/5;
+    border-radius: 12px; overflow:hidden; border: 2px solid var(--ink);
+    background: var(--cream);
+  }
+  .choice-img-box::before{
+    content:""; position:absolute; inset:-12px;
+    background: var(--src) center/cover no-repeat;
+    filter: blur(12px) brightness(1.05) saturate(1.1); opacity:.75;
+  }
+  .choice-img-box img{
+    position:relative; width:100%; height:100%;
+    aspect-ratio:auto; border:none; border-radius:0;
+    object-fit: cover; object-position: 50% 30%;
+  }
+  .choice-img-box.fit-whole img{ object-fit: contain; }
+
+  /* --- surprise reveal photo in the popup: natural shape --- */
+  .modal-reveal-image{
+    aspect-ratio:auto; object-fit:contain;
+    width:auto; height:auto;
+    max-width: min(300px, 76vw);
+    max-height: min(42vh, 380px);
+  }
+  .modal-reveal-image[data-orient="portrait"]{ height: min(42vh, 380px); }
+  .modal-reveal-image[data-orient="landscape"]{ width: min(300px, 76vw); max-height:none; }
+  .modal-reveal-image[data-orient="square"]{ width: min(250px, 66vw); }
+
+  /* --- pause-screen keepsake polaroid: natural shape --- */
+  .ribbon-photo{
+    aspect-ratio:auto; object-fit:contain;
+    width:auto; height:auto;
+    max-width: min(300px, 74vw);
+    max-height: min(46vh, 420px);
+  }
+  .ribbon-photo[data-orient="portrait"]{ height: min(46vh, 420px); }
+  .ribbon-photo[data-orient="landscape"]{ width: min(320px, 78vw); max-height:none; }
+  .ribbon-photo[data-orient="square"]{ width: min(260px, 68vw); }
+
+  /* --- quiz intro photo (a tall portrait): shown as a portrait card --- */
+  .quiz-icon-image{
+    width: auto; height: min(38vh, 300px);
+    aspect-ratio: 3/4; object-fit: cover; object-position: 50% 20%;
+  }
+
+  /* --- round greeting photo: keep her face in the circle --- */
+  .photo-frame img{ object-position: 50% 28%; }
+
+  /* --- final-page photo stack: uniform 3:4 cards (tidy fanned stack),
+         cropped from just below the top so faces stay in frame --- */
+  .flip-card{ aspect-ratio: 3/4; width: min(190px, 52vw); }
+  .flip-front img{ object-position: 50% 18%; }
+
+  /* --- group photo polaroid (4:3 landscape): match its real shape --- */
+  .final-collage{ width: min(270px, 76vw); height: auto; aspect-ratio: 4/3.1; }
+  .polaroid-1{ width: calc(100% - 20px); height: auto; aspect-ratio: 4/3; left: 10px; top: 6px; }
+  .polaroid-1 .flip-face{ padding: 6px 6px 16px 6px; }
+
+  /* --- last page (her + cat is a wide 3:2 photo): landscape frame --- */
+  .goodbye-frame{ width: min(330px, 82vw); aspect-ratio: 3/2; border-radius: 22px; }
+  .goodbye-frame img{ object-position: 40% 40%; }
+
+  /* very short phones (landscape or small screens): shrink tall photos a bit */
+  @media (max-height: 640px){
+    .question-image[data-orient="portrait"], .ribbon-photo[data-orient="portrait"]{ height: 40vh; }
+    .quiz-icon-image{ height: 32vh; }
+  }
 </style>
 </head>
 <body>
@@ -1658,7 +1773,6 @@
       <p class="fi-title">for <span id="fiName">Allysa</span></p>
       <p class="fi-sub">a little birthday surprise</p>
     </div>
-    <p class="fi-skip">tap to open</p>
   </div>
   <div class="fi-ring" id="fiRing"><div class="fi-ring-spin" id="fiRingSpin"></div></div>
 </div>
@@ -1813,7 +1927,6 @@
             </svg>
           </div>
         </div>
-        <p class="envelope-hint" id="envelopeHint">tap to open</p>
       </div>
     </div>
   </section>
@@ -2658,8 +2771,24 @@ function setupLetterReveal(){
    startRoseShower(): a big burst of tumbling roses, then a light, steady
    trickle until the envelope is opened (or the screen changes).
    Tweak ROSE_BURST / ROSE_TRICKLE_MS to make it heavier or lighter. */
-const ROSE_BURST = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 15 : (window.innerWidth < 600 ? 55 : 75);
-const ROSE_TRICKLE_MS = 380;
+const IS_SMALL_SCREEN = window.innerWidth < 600;
+const ROSE_BURST = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 12 : (IS_SMALL_SCREEN ? 30 : 60);
+const ROSE_TRICKLE_MS = IS_SMALL_SCREEN ? 650 : 420;
+
+/* Each flower drawing is turned into a ready-made image ONCE (and preloaded
+   by the loading screen). Falling <img>s are far cheaper for a phone to
+   spin around than live vector drawings with gradients. */
+const FLOWER_SRC = (() => {
+  const out = {};
+  try {
+    const lib = document.querySelector('svg defs #rsPetal').closest('svg').innerHTML;
+    ['rose-front','fl-sunflower','fl-tulip','fl-daisy','fl-forgetmenot','rose-petal','pink-petal'].forEach(id => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" width="128" height="128">${lib}<use href="#${id}" xlink:href="#${id}"/></svg>`;
+      out[id] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+  } catch(_) {}
+  return out;
+})();
 const roseLayer = document.getElementById('roseLayer');
 let roseTrickleTimer = null;
 
@@ -2701,7 +2830,9 @@ function spawnRose(isBurst){
     `--rx0:${rnd(-60, 60)}deg;--rx1:${rnd(-70, 70)}deg;` +
     `--ry0:${rnd(-60, 60)}deg;--ry1:${rnd(-70, 70)}deg;` +
     `--rz0:${rnd(0, 360)}deg;--rz1:${rnd(-180, 540)}deg;`;
-  tumble.innerHTML = `<svg viewBox="0 0 100 100"><use href="#${kind}"/></svg>`;
+  tumble.innerHTML = FLOWER_SRC[kind]
+    ? `<img src="${FLOWER_SRC[kind]}" alt="" decoding="async" draggable="false">`
+    : `<svg viewBox="0 0 100 100"><use href="#${kind}"/></svg>`;
   fall.appendChild(tumble);
   fall.addEventListener('animationend', (e) => { if (e.target === fall) fall.remove(); });
   roseLayer.appendChild(fall);
@@ -2773,6 +2904,25 @@ window.addEventListener('resize', updateScrollHint);
   }, { passive: true });
 })();
 
+/* ---------- photo shape tagging ----------
+   Every <img> gets data-orient once it has loaded, so the CSS (PHOTO
+   FITTING) can lay tall, wide and square photos out differently. Works for
+   photos added later by the quiz too (the load event is caught on the way
+   down). */
+function tagPhotoShape(img){
+  if (!img.naturalWidth) return;
+  const r = img.naturalWidth / img.naturalHeight;
+  img.dataset.orient = r > 1.12 ? 'landscape' : (r < 0.9 ? 'portrait' : 'square');
+  // picture choices: very tall/wide photos are shown whole over a blurred copy
+  const box = img.closest('.choice-img-box');
+  if (box){
+    box.style.setProperty('--src', `url("${img.currentSrc || img.src}")`);
+    box.classList.toggle('fit-whole', r > 1.25 || r < 0.78);
+  }
+}
+document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') tagPhotoShape(e.target); }, true);
+document.querySelectorAll('img').forEach(img => { if (img.complete) tagPhotoShape(img); });
+
 /* ---------- phone haptics ---------- */
 document.addEventListener('click', (e) => {
   if (e.target.closest('button, #envelopeWrap') && navigator.vibrate) { try { navigator.vibrate(12); } catch(_){} }
@@ -2783,16 +2933,15 @@ document.addEventListener('click', (e) => {
    flap swings open, letter rises), then the "Open letter" button fades in
    once the letter has finished sliding up. */
 const envelopeFrames = document.getElementById('envelope');
-const envelopeHint = document.getElementById('envelopeHint');
 const btnEnvelopeNext = document.getElementById('btnEnvelopeNext');
 const btnEnvelopeNextPos = document.getElementById('btnEnvelopeNextPos');
 
 document.getElementById('envelopeWrap').addEventListener('click', () => {
   if (envelopeFrames.classList.contains('opened')) return;
   envelopeFrames.classList.add('opened');
+  stopRoseShower(); clearRoseShower();   // flowers fade out so the opening is clear
   envelopeFrames.setAttribute('aria-label', 'an opened envelope with a letter inside');
   playOpenLetterSound();
-  envelopeHint.style.opacity = 0;
   setTimeout(() => {
     btnEnvelopeNextPos.hidden = false;
     requestAnimationFrame(() => btnEnvelopeNextPos.classList.add('show'));
@@ -2945,13 +3094,16 @@ function renderQuestion(index){
       // Picture-based choice button
       btn = document.createElement('button');
       btn.className = 'choice-picture-btn';
+      const box = document.createElement('span');
+      box.className = 'choice-img-box';
       const img = document.createElement('img');
       img.src = choice.image;
       img.alt = choice.label;
+      box.appendChild(img);
       const label = document.createElement('span');
       label.className = 'choice-label';
       label.textContent = choice.label;
-      btn.appendChild(img);
+      btn.appendChild(box);
       btn.appendChild(label);
     } else {
       // Cute plain text choice button
@@ -3543,7 +3695,8 @@ function runLoadingScreen(){
 
   const audioEls = Array.from(document.querySelectorAll('audio'));
   const sfxKeys = Object.keys(SFX_FILES);
-  const total = LOADING_IMAGES.length + audioEls.length + sfxKeys.length + 1; // +1 for the web fonts
+  const flowerImgs = Object.values(FLOWER_SRC);     // the falling-flower pictures, so the shower starts instantly
+  const total = LOADING_IMAGES.length + flowerImgs.length + audioEls.length + sfxKeys.length + 1; // +1 for the web fonts
   let settled = 0;
   let finished = false;
 
@@ -3570,6 +3723,7 @@ function runLoadingScreen(){
   }
 
   LOADING_IMAGES.forEach(src => preloadImage(src, bump));
+  flowerImgs.forEach(src => preloadImage(src, bump));
   audioEls.forEach(el => preloadAudioFully(el, bump));
   sfxKeys.forEach(key => loadSfxBuffer(key, SFX_FILES[key], bump));
 
