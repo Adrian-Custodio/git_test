@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dear Allysa 💚</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- phone polish: tints the browser bar to match the sky, and lets it be
+     saved to the home screen like a little app -->
+<meta name="theme-color" content="#fde3ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<title>Dear Allysa 🌸💚</title>
 
 <!-- Google Fonts: chunky pixel-game font for headings/buttons everywhere except the
      final letter, which switches to a cursive pairing (Dancing Script + Caveat)
@@ -15,28 +22,55 @@
 <style>
   /* ===================== DESIGN TOKENS ===================== */
   :root{
-    --sage-light:#e0f5e1;
-    --sage:#85d188;
-    --sage-mid:#4ab54e;
-    --sage-dark:#316d33;
-    --cream:#fffaf0;
-    --gold:#e6b657;
-    --blush:#f3c9c6;
-    --pink-strong:#e78fa0;
-    --cherry-blossom:#f6b0bb; /* a touch more saturated than --blush, used just for the background glow/gradient */
-    --ink:#33422e;
-    --text-dark:#3f4a3d;
+    /* THEME: "garden party" -> mint/leaf greens + blossom pinks only.
+       Change these few values and the whole site follows. */
+    --mint:#effaf1;
+    --sage-light:#dff3e3;
+    --sage:#9bd8a8;
+    --sage-mid:#5bb877;
+    --sage-dark:#2f7a4c;
+    --forest:#1c4430;          /* the "garden at night" screens (were plain black) */
+    --cream:#fffaf6;
+    --gold:#ffe9a8;            /* only a tiny butter accent now (flower centers) */
+    --blush:#ffd9e4;
+    --pink-strong:#f08bab;
+    --rose:#d9628a;
+    --cherry-blossom:#ffc2d4;
+    --ink:#2c4a36;             /* outlines + hard shadows: deep leaf green instead of near-black */
+    --text-dark:#33503d;
     --white:#ffffff;
-    --shadow-soft: 0 10px 30px rgba(63,74,61,0.15);
-    /* extra florist-bouquet accents — used only by the loading screen's
-       flower ring/progress bar below, deliberately outside the site's
-       usual sage/pink pairing (see #screen-loading comment) */
-    --coral:#e8836b;
-    --sky:#8fb3e0;
-    --lavender:#b48fd8;
+    --shadow-soft: 0 10px 30px rgba(44,74,54,0.18);
+    --gloss: inset 0 3px 0 rgba(255,255,255,.38); /* the shiny "candy" highlight on buttons */
   }
 
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  /* ---------- phone polish ----------
+     - text never auto-inflates when the phone rotates
+     - smoother font rendering
+     - no accidental pull-to-refresh / rubber-band bounce mid-letter
+     - content stays clear of the notch and the home-bar */
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  ::selection{ background: var(--cherry-blossom); color:#4f3a42; }
+  img{ -webkit-user-drag:none; -webkit-touch-callout:none; }
+  button{ min-height:44px; }        /* comfortable thumb-sized tap targets */
+  /* a satisfying "press" on every button for thumbs (no hover on phones) */
+  @media (hover:none){
+    .btn-primary:active, .btn-ghost:active, .btn-yes:active{ transform: scale(.95); transition-duration:.06s; }
+  }
+  /* reading progress bar for the long letter */
+  .read-progress{
+    position:fixed; top:0; left:0; height:4px; width:0; z-index:120;
+    padding-top: env(safe-area-inset-top);
+    background: linear-gradient(90deg, var(--pink-strong), var(--sage-mid));
+    border-radius: 0 4px 4px 0;
+    opacity:0; transition: opacity .3s ease;
+    pointer-events:none;
+  }
+  .read-progress.show{ opacity:1; }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
   html,body{
     margin:0; padding:0; min-height:100%;
     font-family:'Quicksand', sans-serif;
@@ -47,9 +81,9 @@
        low) sit over a gentler diagonal wash for a dreamier, more "romantic
        meadow at golden hour" feel than the old flat top-to-bottom fade. */
     background:
-      radial-gradient(ellipse 60% 40% at 18% 8%, rgba(255,255,255,.55), transparent 60%),
-      radial-gradient(ellipse 55% 45% at 88% 88%, rgba(246,176,187,.4), transparent 60%),
-      linear-gradient(160deg, #caf2cd 0%, #a2e2a4 20%, #8cd98c 36%, #eef0d2 52%, #f8ddd7 70%, #f6c7d6 86%, #f3b6cd 100%);
+      radial-gradient(ellipse 60% 40% at 18% 8%, rgba(255,255,255,.6), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 88% 88%, rgba(255,194,212,.5), transparent 60%),
+      linear-gradient(165deg, #dff3e3 0%, #c4ebcc 22%, #eaf6e8 45%, #ffe6ee 68%, #ffd3e0 86%, #ffc2d4 100%);
     overflow-x:hidden;
     touch-action: pan-y; /* this is a tap-through card, not a pinch-zoom page */
   }
@@ -66,51 +100,60 @@
   button{ font-family:'Pixelify Sans', sans-serif; border:none; cursor:pointer; background:none; touch-action:manipulation; }
   img{ max-width:100%; display:block; }
 
-  /* ===================== FIXED PIXEL-ART SCENE (guide reference) =====================
-     Lives behind every screen: drifting clouds + a jagged 8-bit hill skyline,
-     over a faint scatter of tiny hearts (baked into the tile at low alpha,
-     so it doesn't dim the clouds/hills painted on top of it) for a bit more
-     romance in the empty space between them. */
+  /* ===================== DREAMY GARDEN BACKDROP =====================
+     Replaces the old confetti photo (bg-blend.png is still in the folder if
+     you ever want it back). Everything here is pure CSS + one inline SVG, so
+     it loads instantly and stays sharp on any screen:
+       - a soft blush-to-mint sky
+       - glowing bokeh lights that slowly breathe
+       - two drifting clouds
+       - layered rolling hills dotted with little tulips at the bottom */
+  .photo-bg{
+    position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 45% at 50% 18%, rgba(255,255,255,.85), transparent 70%),   /* soft sun-glow up top */
+      linear-gradient(180deg, #ffe3ec 0%, #fdeef3 30%, #f1f7ee 58%, #d6f0dc 78%, #bfe6c8 100%);
+  }
+  /* bokeh lights: each one is a blurred radial dot, gently pulsing */
+  .bg-bokeh{ position:absolute; border-radius:50%; filter:blur(2px); opacity:.55; animation: bokehBreathe 7s ease-in-out infinite; }
+  .bg-bokeh.pink{ background: radial-gradient(circle, rgba(255,182,206,.9), rgba(255,182,206,0) 70%); }
+  .bg-bokeh.mint{ background: radial-gradient(circle, rgba(170,230,186,.9), rgba(170,230,186,0) 70%); }
+  .bg-bokeh.gold{ background: radial-gradient(circle, rgba(255,236,170,.95), rgba(255,236,170,0) 70%); }
+  @keyframes bokehBreathe{
+    0%,100%{ transform:scale(1) translateY(0); opacity:.4; }
+    50%{ transform:scale(1.18) translateY(-12px); opacity:.75; }
+  }
+  /* fluffy clouds made of stacked soft circles, drifting sideways forever */
+  .bg-cloud{
+    position:absolute; width:220px; height:60px; border-radius:60px;
+    background: rgba(255,255,255,.75); filter: blur(1px);
+    animation: cloudDrift linear infinite;
+  }
+  .bg-cloud::before, .bg-cloud::after{ content:""; position:absolute; background:inherit; border-radius:50%; }
+  .bg-cloud::before{ width:90px; height:90px; left:35px; top:-45px; }
+  .bg-cloud::after{ width:120px; height:110px; left:95px; top:-60px; }
+  .bg-cloud.c1{ top:12%; animation-duration:95s; animation-delay:-30s; }
+  .bg-cloud.c2{ top:28%; transform:scale(.65); animation-duration:130s; animation-delay:-90s; opacity:.8; }
+  @keyframes cloudDrift{ from{ left:-260px; } to{ left:calc(100% + 40px); } }
+  /* the hills + tulips sit pinned to the bottom edge; "slice" keeps flowers
+     un-stretched and just crops the sides on narrow phones */
+  .bg-hills{ position:absolute; left:0; right:0; bottom:0; width:100%; height:42vh; min-height:220px; }
+  .bg-hills .sway{ transform-box: fill-box; transform-origin: 50% 100%; animation: tulipSway 4s ease-in-out infinite; }
+  @keyframes tulipSway{ 0%,100%{ transform:rotate(-3deg); } 50%{ transform:rotate(3deg); } }
+  @media (prefers-reduced-motion: reduce){
+    .bg-bokeh, .bg-cloud, .bg-hills .sway{ animation:none; }
+  }
+
+  /* ===================== FIXED SCENE =====================
+     A faint scatter of tiny hearts (baked into the tile at low alpha, so it
+     doesn't dim the photo backdrop painted beneath it) sits over the photo
+     on every screen. The old painted sky/clouds/hill skyline was dropped —
+     it doesn't make sense layered over an actual photo. */
   .pixel-scene{
     position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cpath d='M16 12c-2.4-4.6-9-4.2-9 1.4c0 4.6 4.6 7 9 10.6c4.4-3.6 9-6 9-10.6c0-5.6-6.6-6-9-1.4z' fill='%23e78fa0' fill-opacity='.16'/%3E%3C/svg%3E");
-    background-size: 64px 64px;
-  }
-
-  .pixel-cloud{
-    position:absolute;
-    background: var(--white);
-    border-radius: 50% / 60%;
-    opacity:.9;
-    animation-name: driftX;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-  }
-  .pixel-cloud::before, .pixel-cloud::after{
-    content:""; position:absolute; background:inherit; border-radius:50%;
-  }
-  @keyframes driftX{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(26px); } }
-
-  .cloud-a{ width:120px; height:46px; top:10%; left:6%; animation-duration:30s; }
-  .cloud-a::before{ width:60px; height:60px; top:-30px; left:14px; }
-  .cloud-a::after{ width:50px; height:44px; top:-18px; left:58px; }
-
-  .cloud-b{ width:90px; height:36px; top:22%; right:8%; animation-duration:24s; animation-delay:-6s; }
-  .cloud-b::before{ width:46px; height:46px; top:-22px; left:10px; }
-  .cloud-b::after{ width:38px; height:34px; top:-14px; left:44px; }
-
-  .cloud-c{ width:100px; height:38px; top:15%; left:50%; background: var(--blush); animation-duration:34s; animation-delay:-14s; }
-  .cloud-c::before{ width:50px; height:50px; top:-24px; left:12px; }
-  .cloud-c::after{ width:42px; height:38px; top:-16px; left:48px; }
-
-  .pixel-hill{ position:absolute; left:0; right:0; bottom:0; background: var(--sage-mid); }
-  .hill-back{
-    height:24vh; opacity:.55;
-    clip-path: polygon(0% 100%,0% 58%,8% 58%,8% 42%,16% 42%,16% 60%,24% 60%,24% 38%,32% 38%,32% 52%,40% 52%,40% 32%,48% 32%,48% 46%,56% 46%,56% 28%,64% 28%,64% 44%,72% 44%,72% 56%,80% 56%,80% 34%,88% 34%,88% 50%,96% 50%,96% 40%,100% 40%,100% 100%);
-  }
-  .hill-front{
-    height:14vh; background: var(--sage-dark);
-    clip-path: polygon(0% 100%,0% 45%,7% 45%,7% 65%,14% 65%,14% 35%,21% 35%,21% 55%,28% 55%,28% 30%,35% 30%,35% 50%,42% 50%,42% 25%,49% 25%,49% 48%,56% 48%,56% 32%,63% 32%,63% 55%,70% 55%,70% 28%,77% 28%,77% 46%,84% 46%,84% 60%,91% 60%,91% 38%,100% 38%,100% 100%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88'%3E%3Cpath d='M20 16c-2.4-4.6-9-4.2-9 1.4c0 4.6 4.6 7 9 10.6c4.4-3.6 9-6 9-10.6c0-5.6-6.6-6-9-1.4z' fill='%23f08bab' fill-opacity='.2'/%3E%3Cg fill='%235bb877' fill-opacity='.2'%3E%3Ccircle cx='64' cy='58' r='3.6'/%3E%3Ccircle cx='64' cy='70' r='3.6'/%3E%3Ccircle cx='58' cy='64' r='3.6'/%3E%3Ccircle cx='70' cy='64' r='3.6'/%3E%3C/g%3E%3Ccircle cx='64' cy='64' r='2.4' fill='%23f08bab' fill-opacity='.35'/%3E%3C/svg%3E");
+    background-size: 88px 88px;
+    opacity:.4;
   }
 
   /* ===================== AMBIENT SPARKLE LAYER (the "little sparkles" from the video) ===================== */
@@ -124,7 +167,7 @@
     animation-iteration-count: infinite;
     will-change: opacity, transform;
   }
-  .sparkle.gold{ color:var(--gold); text-shadow:0 0 6px rgba(230,182,87,.7); }
+  .sparkle.mint{ color:#c9f2d2; text-shadow:0 0 6px rgba(91,184,119,.8); }
   .sparkle.pink{ color:var(--pink-strong); text-shadow:0 0 6px rgba(231,143,160,.7); }
   .sparkle.white{ color:#ffffff; text-shadow:0 0 6px rgba(255,255,255,.85); }
   @keyframes twinkle{
@@ -149,7 +192,7 @@
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    padding: 2rem 1.25rem;
+    padding: calc(2rem + env(safe-area-inset-top)) calc(1.25rem + env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) calc(1.25rem + env(safe-area-inset-left));
     text-align:center;
     overflow:hidden;
   }
@@ -208,14 +251,15 @@
     padding: .95rem 2rem;
     font-size:1rem; font-weight:700;
     color:var(--white);
-    background: linear-gradient(135deg, var(--sage-mid), var(--sage-dark));
+    background: linear-gradient(180deg, #74c98d, var(--sage-mid) 55%, #4aa266);
     border: 3px solid var(--ink);
     border-radius: 999px;
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: 4px 4px 0 var(--pink-strong), 4px 4px 0 3px var(--ink), var(--gloss);
+    text-shadow: 0 2px 0 rgba(44,74,54,.35);
     transition: transform .15s ease, box-shadow .15s ease;
   }
-  .btn-primary:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
-  .btn-primary:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+  .btn-primary:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--pink-strong), 6px 6px 0 3px var(--ink), var(--gloss); }
+  .btn-primary:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--pink-strong), 1px 1px 0 3px var(--ink), var(--gloss); }
 
   .btn-ghost{
     padding:.6rem 1.4rem;
@@ -227,16 +271,16 @@
     box-shadow: 3px 3px 0 var(--ink);
     transition: all .15s ease;
   }
-  .btn-ghost:hover{ background:var(--sage-mid); color:var(--white); transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+  .btn-ghost:hover{ background:var(--pink-strong); color:var(--white); transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
   .btn-ghost:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
 
   .sound-toggle{
-    position:fixed; top:1rem; right:1rem;
+    position:fixed; top:calc(1rem + env(safe-area-inset-top)); right:calc(1rem + env(safe-area-inset-right));
     width:46px; height:46px;
-    border-radius:14px;
-    background: var(--cream);
+    border-radius:50%;
+    background: var(--blush);
     border: 3px solid var(--ink);
-    box-shadow: 3px 3px 0 var(--ink);
+    box-shadow: 3px 3px 0 var(--ink), var(--gloss);
     font-size:1.2rem;
     display:flex; align-items:center; justify-content:center;
     z-index:100;
@@ -251,7 +295,7 @@
     align-items:center; gap:.3rem;
     font-family:'Pixelify Sans', sans-serif; font-size:.75rem; font-weight:700;
     color:var(--ink);
-    background: var(--cream);
+    background: var(--blush);
     border: 2px solid var(--ink);
     border-radius: 999px;
     padding:.4rem .8rem;
@@ -264,11 +308,32 @@
   @keyframes bounceHint{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(5px); } }
 
   /* ===================== SCREEN 0: LOADING GATE ===================== */
-  #screen-loading{ background: linear-gradient(160deg, #fbf6ea 0%, #f7ecf3 50%, #eef1fb 100%); }
+  #screen-loading{
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,194,212,.75), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(155,216,168,.7), transparent 70%),
+      linear-gradient(180deg, #fff1f5 0%, #fffaf6 50%, #effaf1 100%);
+  }
+  /* the cake sits in the middle of a slowly spinning ring of little flowers */
+  .loading-bloom{
+    position:relative;
+    width:150px; height:150px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:.6rem;
+  }
+  .loading-bloom-ring{ position:absolute; inset:0; animation: spinSlow 9s linear infinite; }
+  .loading-bloom-ring .lb-flower{
+    position:absolute; left:50%; top:50%;
+    width:30px; height:30px; margin:-15px 0 0 -15px;
+    transform: rotate(calc(var(--i) * 45deg)) translateY(-62px);
+    color: var(--pink-strong);
+  }
+  .loading-bloom-ring .lb-flower:nth-child(even){ color: var(--sage-mid); width:22px; height:22px; margin:-11px 0 0 -11px; }
+  .loading-bloom-ring .lb-flower svg{ width:100%; height:100%; display:block; animation: spinSlow 4s linear infinite reverse; }
+  @keyframes spinSlow{ to{ transform: rotate(360deg); } }
   .loading-cake{
     position:relative;
-    font-size: clamp(3.2rem, 14vw, 4.5rem);
-    margin-bottom: .5rem;
+    font-size: clamp(3rem, 13vw, 3.8rem);
     animation: loadingCakeBob 1.8s ease-in-out infinite;
   }
   @keyframes loadingCakeBob{
@@ -291,7 +356,7 @@
     font-size: clamp(1.1rem, 4.6vw, 1.4rem);
     color: var(--sage-dark);
     max-width: 320px;
-    margin: 0 0 1.6rem;
+    margin: 0 0 1.4rem;
   }
   .loading-bar-track{
     width: min(260px, 72vw);
@@ -299,7 +364,7 @@
     background: var(--white);
     border: 3px solid var(--ink);
     border-radius: 999px;
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: 4px 4px 0 var(--pink-strong), 4px 4px 0 3px var(--ink);
     padding: 3px;
     overflow:hidden;
   }
@@ -307,20 +372,19 @@
     height:100%;
     width:0%; /* set from JS as assets actually finish loading */
     border-radius: 999px;
-    /* a full floral spread — coral, gold, sky, lavender, blossom-pink —
-       instead of the site's usual sage/pink pairing, matching the ring above */
-    background: linear-gradient(90deg, var(--coral), var(--gold), var(--sky), var(--lavender), var(--pink-strong));
-    background-size: 300% 100%;
+    /* pink + mint candy stripes, slowly sliding */
+    background: repeating-linear-gradient(-45deg, var(--pink-strong) 0 10px, #ffb3c9 10px 20px, var(--sage) 20px 30px, #bfe6c8 30px 40px);
+    background-size: 56.57px 56.57px;
     transition: width .35s ease;
-    animation: loadingShimmer 2.2s linear infinite;
+    animation: loadingShimmer 1.2s linear infinite;
   }
   @keyframes loadingShimmer{
-    0%{ background-position: 0% 0; }
-    100%{ background-position: -300% 0; }
+    0%{ background-position: 0 0; }
+    100%{ background-position: 56.57px 0; }
   }
   .loading-percent{
-    font-weight:700; color:var(--sage-dark);
-    margin: .6rem 0 .2rem;
+    font-weight:700; color:var(--rose);
+    margin: .7rem 0 .2rem;
   }
   /* revealed once loading actually finishes (see finish() in the script) —
      the flower tunnel above keeps spinning the whole time this sits here,
@@ -331,18 +395,97 @@
     padding: 1rem 2.6rem;
     font-size:1.05rem; font-weight:700;
     color:var(--white);
-    background: linear-gradient(135deg, var(--coral), var(--gold));
+    background: linear-gradient(180deg, #f7a6bf, var(--pink-strong) 55%, var(--rose));
     border: 3px solid var(--ink);
     border-radius:999px;
-    box-shadow:4px 4px 0 var(--ink);
+    box-shadow:4px 4px 0 var(--sage-mid), 4px 4px 0 3px var(--ink), var(--gloss);
+    text-shadow: 0 2px 0 rgba(150,40,80,.3);
     opacity:0;
     transform: translateY(10px) scale(.95);
     transition: opacity .5s ease, transform .5s ease, box-shadow .15s ease;
     pointer-events:none;
   }
   .loading-start-btn.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
-  .loading-start-btn:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
-  .loading-start-btn:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  .loading-start-btn:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--sage-mid), 6px 6px 0 3px var(--ink), var(--gloss); }
+  .loading-start-btn:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--sage-mid), 1px 1px 0 3px var(--ink), var(--gloss); }
+
+  /* ===================== FLOWER SHOWER (envelope screen) =====================
+     A mix of roses, sunflowers, tulips, daisies and forget-me-nots tumble down over the page the moment the envelope screen
+     appears (a big burst), then keep drifting down lightly until she opens
+     the envelope. Each rose = .rose-fall (falls + drifts sideways) wrapping
+     .rose-tumble (spins in 3D), so the two motions combine freely. */
+  .rose-layer{
+    position:fixed; inset:0; z-index:60; pointer-events:none; overflow:hidden;
+    perspective: 700px;
+  }
+  .rose-fall{
+    position:absolute; top:0;
+    animation: roseFall var(--dur) linear var(--delay) both;
+    will-change: transform;
+  }
+  .rose-tumble{
+    width:100%; height:100%;
+    animation: roseTumble var(--spin) ease-in-out infinite alternate;
+    filter: drop-shadow(0 4px 4px rgba(90,0,15,.25));
+  }
+  .rose-tumble svg{ width:100%; height:100%; display:block; overflow:visible; }
+  @keyframes roseFall{
+    0%  { transform: translate3d(0, -120px, 0); opacity:0; }
+    6%  { opacity:1; }
+    90% { opacity:1; }
+    100%{ transform: translate3d(var(--drift), 110vh, 0); opacity:0; }
+  }
+  @keyframes roseTumble{
+    from{ transform: rotateX(var(--rx0)) rotateY(var(--ry0)) rotateZ(var(--rz0)); }
+    to  { transform: rotateX(var(--rx1)) rotateY(var(--ry1)) rotateZ(var(--rz1)); }
+  }
+
+  /* ===================== TAP EFFECT (anywhere on the site) =====================
+     Every touch/click leaves a soft glowing ring plus a little burst of
+     hearts and sparkles that pop outward and fade. Purely visual: it never
+     blocks the tap from reaching buttons underneath. */
+  .tap-fx{ position:fixed; left:0; top:0; width:0; height:0; z-index:9998; pointer-events:none; }
+  .tap-ring{
+    position:absolute; left:-30px; top:-30px; width:60px; height:60px; border-radius:50%;
+    border: 2px solid rgba(240,139,171,.9);
+    box-shadow: 0 0 12px rgba(240,139,171,.6), inset 0 0 10px rgba(255,233,168,.6);
+    animation: tapRing .6s ease-out forwards;
+  }
+  .tap-dot{
+    position:absolute; left:0; top:0; line-height:1; font-size:var(--fs);
+    color: var(--c); text-shadow: 0 0 6px rgba(255,255,255,.9);
+    animation: tapPop .75s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes tapRing{
+    from{ transform: scale(.15); opacity:1; }
+    to  { transform: scale(1.4); opacity:0; }
+  }
+  @keyframes tapPop{
+    0%  { transform: translate(-50%,-50%) scale(.3); opacity:1; }
+    70% { opacity:1; }
+    100%{ transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(var(--rot)); opacity:0; }
+  }
+
+  /* ===================== LETTER -> GREETING TRANSITION =====================
+     Tapping "Open letter": the letter lifts out of the envelope and unfolds
+     to fill the whole screen (like bringing it up close to read), then the
+     paper softly dissolves into the dark "hello" screen with her name. */
+  .letter-zoom{
+    position:fixed; z-index:150; pointer-events:none;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 17px, rgba(91,184,119,.12) 17px 18px),
+      linear-gradient(180deg, #fffdf9, #fff3f0);
+    border-radius:8px;
+    box-shadow: 0 20px 60px rgba(44,74,54,.35);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .letter-zoom span{
+    font-family:'Dancing Script', cursive; font-weight:700; color: var(--rose);
+    font-size: clamp(2rem, 9vw, 3rem);
+    transition: opacity .4s ease;
+  }
+  #screen-envelope.leaving .screen-content{ transition: opacity .5s ease, transform .6s ease; opacity:0; transform: scale(.94); }
 
   /* ===================== SCREEN 1: ENVELOPE ===================== */
   /* hand-drawn SVG flipbook: env1 (sealed, ribbon + wax seal) -> env2 (ribbon
@@ -353,34 +496,91 @@
      instead of a dissolve. All three frames share the same 320x320 viewBox,
      so the box holds a fixed size throughout — the opening reads through the
      artwork itself, no layout jump. */
+  /* New envelope: built from real layers (not image frames), so it opens
+     in actual 3D —
+       1. the heart wax seal pops off
+       2. the top flap swings open on its hinge
+       3. the letter slides up out of the pocket, "Open letter" button on it
+     Layer order (back -> front): .env-back, .env-letter, .env-pocket,
+     .env-flap, .env-seal. The flap drops behind the letter halfway through
+     its swing so the letter can rise in front of it. */
   .envelope-wrap{ display:flex; flex-direction:column; align-items:center; gap:1.5rem; user-select:none; touch-action:manipulation; }
   .envelope-frames{
     position:relative;
-    width: min(300px, 78vw);
-    aspect-ratio: 1/1;
+    width: min(320px, 82vw);
+    aspect-ratio: 10/7;
     cursor:pointer;
+    perspective: 900px;
+    margin-top: 0;
+    animation: envFloat 3.2s ease-in-out infinite;          /* gentle idle bob */
+    transition: margin-top .7s cubic-bezier(.4,0,.2,1) .7s;  /* makes room for the letter */
+    filter: drop-shadow(0 18px 22px rgba(44,74,54,.22));
   }
-  .envelope-layer{
-    position:absolute; inset:0;
-    display:block; width:100%; height:100%;
-    opacity:0;
-    transform: scale(.97);
-    transition: opacity .55s ease, transform .55s ease;
-  }
-  .envelope-layer.front{ opacity:1; transform: scale(1); }
+  .envelope-frames:hover .env-seal{ transform: translate(-50%,-50%) scale(1.07); }
+  .envelope-frames.opened{ margin-top: 34%; animation:none; }
+  @keyframes envFloat{ 0%,100%{ transform:translateY(0) rotate(-1.5deg); } 50%{ transform:translateY(-8px) rotate(1deg); } }
 
-  /* (b) EDIT: env3.svg's letter is a rect from x=70,y=90 to x=250,y=290 in
-     its 320x320 viewBox, and the front flap only covers it below y=235 — so
-     x=50%, y=51% sits dead center in the guaranteed-clear paper area above
-     the flap. Recompute this if env3.svg's geometry ever changes.
-     The centering transform lives on this wrapper, never on the button
-     itself — .btn-primary's :hover/:active also set `transform` (the same
-     squish every other button gets), and a second transform on one element
-     always replaces the first rather than combining with it. Splitting them
-     onto two elements lets the button keep the normal hover/active feel
-     without ever fighting the wrapper for centering. */
+  /* inside of the envelope: blush liner with a tiny heart pattern */
+  .env-back{
+    position:absolute; inset:0; z-index:1; border-radius:12px;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath d='M11 8c-1.2-2.3-4.5-2.1-4.5.7c0 2.3 2.3 3.5 4.5 5.3c2.2-1.8 4.5-3 4.5-5.3c0-2.8-3.3-3-4.5-.7z' fill='%23ffffff' fill-opacity='.45'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, #f7a6bf, #e9819f);
+    border: 3px solid var(--ink);
+  }
+
+  /* the letter itself: cream paper with faint ruled lines */
+  .env-letter{
+    position:absolute; left:7%; right:7%; top:6%; height:88%; z-index:2;
+    border-radius:8px;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 17px, rgba(91,184,119,.16) 17px 18px),
+      linear-gradient(180deg, #fffdf9, #fff5f0);
+    border: 2px solid rgba(44,74,54,.35);
+    box-shadow: 0 2px 6px rgba(44,74,54,.12);
+    transition: transform .8s cubic-bezier(.3,1.25,.5,1) .85s;
+    display:flex; flex-direction:column; align-items:center;
+    padding-top: 7%;
+  }
+  .envelope-frames.opened .env-letter{ transform: translateY(-58%); }
+  .env-letter-to{
+    font-family:'Dancing Script', cursive; font-weight:700;
+    font-size: clamp(1.15rem, 5.5vw, 1.5rem);
+    color: var(--rose); line-height:1;
+  }
+  .env-letter-to small{ display:block; font-family:'Caveat', cursive; font-size:.7em; color: var(--sage-dark); margin-bottom:.15rem; }
+
+  /* front pocket: two side folds + a bottom fold, drawn in SVG */
+  .env-back, .env-pocket, .env-flap, .env-seal{ pointer-events:none; } /* decorative only: let taps reach the button */
+  .env-pocket{ position:absolute; inset:0; z-index:3; width:100%; height:100%; overflow:visible; }
+
+  /* top flap: two faces (outside cream / inside blush) on a hinge */
+  .env-flap{
+    position:absolute; left:0; top:0; width:100%; height:60%; z-index:4;
+    transform-origin: 50% 0;
+    transform-style: preserve-3d;
+    transition: transform .7s cubic-bezier(.5,0,.3,1) .2s, z-index 0s linear .55s;
+  }
+  .env-flap svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  .env-flap .flap-in{ transform: rotateX(180deg); }
+  .envelope-frames.opened .env-flap{ transform: rotateX(180deg); z-index:1; }
+
+  /* heart wax seal at the flap's tip */
+  .env-seal{
+    position:absolute; left:50%; top:58%; z-index:5;
+    width:22%; aspect-ratio:1/1;
+    transform: translate(-50%,-50%);
+    transition: transform .3s ease, opacity .3s ease;
+    filter: drop-shadow(0 3px 3px rgba(80,20,40,.3));
+  }
+  .env-seal svg{ width:100%; height:100%; display:block; }
+  .envelope-frames.opened .env-seal{ transform: translate(-50%,-90%) scale(1.4) rotate(-12deg); opacity:0; }
+
+  /* "Open letter" button: sits on the visible top part of the risen letter.
+     The centering transform lives on this wrapper, never on the button —
+     .btn-primary's :hover/:active set their own transform. */
   .envelope-next-btn-pos{
-    position:absolute; left:50%; top:51%;
+    position:absolute; left:50%; top:56%;
     transform:translate(-50%,-50%);
     opacity:0;
     transition: opacity .35s ease;
@@ -388,8 +588,16 @@
   .envelope-next-btn-pos.show{ opacity:1; }
   .envelope-next-btn-pos[hidden]{ display:none; }
   .envelope-next-btn{ padding:.55rem 1.3rem; font-size:.85rem; white-space:nowrap; }
+  @media (prefers-reduced-motion: reduce){ .envelope-frames{ animation:none; } }
 
-  .envelope-hint{ font-family:'Pixelify Sans', sans-serif; font-size:.85rem; color: var(--sage-dark); font-weight:700; letter-spacing:.03em; transition: opacity .3s ease; }
+  /* text-shadow offsets below are in em, not px, so this chunky ink outline
+     scales with each element's own font-size instead of looking thin on
+     big headings and too heavy on small labels — used on every bit of text
+     that sits directly on the photo backdrop with no card behind it, since
+     plain --sage-dark text is unreadable against a busy photo (see
+     .photo-bg above). */
+  .envelope-hint{ font-family:'Pixelify Sans', sans-serif; font-size:.9rem; color:#7a3a55; background: rgba(255,255,255,.75); padding:.4rem 1rem; border-radius:999px; box-shadow: 0 4px 12px rgba(120,60,80,.12); font-weight:700; letter-spacing:.04em; margin:0; transition: opacity .3s ease; animation: hintPulse 2s ease-in-out infinite; }
+  @keyframes hintPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
 
   /* ===================== SCREEN 2: CARD / GREETING ===================== */
   .photo-frame{
@@ -398,7 +606,7 @@
     border-radius: 50%;
     background: var(--white);
     border: 6px solid var(--cream);
-    box-shadow: 0 0 0 4px var(--ink), 0 0 0 8px var(--pink-strong), var(--shadow-soft);
+    box-shadow: 0 0 0 4px var(--ink), 0 0 0 9px var(--pink-strong), 0 0 0 12px var(--ink), 0 0 30px 10px rgba(240,139,171,.45);
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
     position:relative;
@@ -415,7 +623,10 @@
   /* Screen 2 goes full black for a beat, iPhone/"Hello" setup-screen style —
      the name swells in from a small point with that same soft overshoot,
      then everything else (photo, button) is styled to sit on the black too. */
-  #screen-greeting{ background:#000; }
+  #screen-greeting{ background:
+      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(240,139,171,.38), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(155,216,168,.28), transparent 70%),
+      linear-gradient(180deg, #1f4a34 0%, var(--forest) 55%, #12301f 100%); }
   #screen-greeting .photo-placeholder{ color: var(--sage-light); }
   #screen-greeting .envelope-hint{ color:#fff; }
   .greeting-name{
@@ -424,6 +635,7 @@
     font-size: clamp(3rem, 13vw, 4.6rem);
     color:#ffffff;
     line-height:1.15;
+    text-shadow: 0 0 18px rgba(240,139,171,.65), 0 2px 0 rgba(0,0,0,.25);
     animation: appleHello 1.3s cubic-bezier(.2,.9,.32,1.4) both;
   }
   @keyframes appleHello{
@@ -433,12 +645,16 @@
   }
 
   /* ===================== SCREEN 4.5: REVEAL TRANSITION ===================== */
-  #screen-reveal{ background:#000; }
+  #screen-reveal{ background:
+      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(240,139,171,.38), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(155,216,168,.28), transparent 70%),
+      linear-gradient(180deg, #1f4a34 0%, var(--forest) 55%, #12301f 100%); }
   .reveal-text{
     font-family:'Dancing Script', cursive;
     font-weight:700;
     font-size: clamp(2.2rem, 9vw, 3.4rem);
     color:#ffffff;
+    text-shadow: 0 0 18px rgba(240,139,171,.65);
     animation: appleHello 1.3s cubic-bezier(.2,.9,.32,1.4) both;
   }
 
@@ -446,12 +662,16 @@
      A quiet non-scored beat dropped into the middle of the quiz — same black
      "Apple hello" swell as the greeting screen and the reveal transition
      above, but she gets a photo and a little note instead of auto-advancing. */
-  #screen-quiz-pause{ background:#000; }
+  #screen-quiz-pause{ background:
+      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(240,139,171,.38), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(155,216,168,.28), transparent 70%),
+      linear-gradient(180deg, #1f4a34 0%, var(--forest) 55%, #12301f 100%); }
   .pause-heading{
     font-family:'Dancing Script', cursive;
     font-weight:700;
     font-size: clamp(1.6rem, 6.6vw, 2.3rem);
     color:#ffffff;
+    text-shadow: 0 0 16px rgba(240,139,171,.6);
     animation: appleHello 1.3s cubic-bezier(.2,.9,.32,1.4) both;
   }
 
@@ -461,29 +681,34 @@
     aspect-ratio: 1/1;
     object-fit: cover;
     object-position: top; /* ali3.jpg is a tall portrait shot — keep the face in frame instead of centering into the middle of her torso */
-    border-radius: 18px;
+    border-radius: 24px;
     border: 3px solid var(--ink);
-    box-shadow: 5px 5px 0 var(--ink);
+    box-shadow: 5px 5px 0 var(--pink-strong), 5px 5px 0 3px var(--ink);
   }
   .quiz-intro-title{
     font-size: clamp(1.5rem, 5.6vw, 2.05rem);
-    color: var(--sage-dark);
+    color: var(--cream);
+    text-shadow: .05em .05em 0 var(--ink), -.05em -.05em 0 var(--ink), .05em -.05em 0 var(--ink), -.05em .05em 0 var(--ink);
   }
 
   /* ===================== SCREEN 4: QUIZ QUESTION ===================== */
   .quiz-progress{
     font-size:.85rem; font-weight:700; letter-spacing:.06em;
-    text-transform:uppercase; color:var(--sage-dark);
+    text-transform:uppercase; color:var(--cream);
+    text-shadow: .06em .06em 0 var(--ink), -.06em -.06em 0 var(--ink), .06em -.06em 0 var(--ink), -.06em .06em 0 var(--ink);
   }
-  .question-prompt{ font-size: clamp(1.4rem, 5.6vw, 1.9rem); color: var(--sage-dark); }
+  .question-prompt{
+    font-size: clamp(1.4rem, 5.6vw, 1.9rem); color: var(--cream);
+    text-shadow: .05em .05em 0 var(--ink), -.05em -.05em 0 var(--ink), .05em -.05em 0 var(--ink), -.05em .05em 0 var(--ink);
+  }
 
   .question-image{
     width: min(230px, 60vw);
     aspect-ratio: 3/4;
     object-fit: cover;
-    border-radius: 16px;
+    border-radius: 20px;
     border: 3px solid var(--ink);
-    box-shadow: 5px 5px 0 var(--ink);
+    box-shadow: 5px 5px 0 var(--pink-strong), 5px 5px 0 3px var(--ink);
   }
 
   /* "Ribbon polaroid" — a cream keepsake-photo frame with a little bow
@@ -546,7 +771,7 @@
      reads as the payoff, not just another connector like the "+" signs */
   .equation-sign.equation-equals{
     font-size: clamp(2rem, 7.6vw, 2.6rem);
-    color: var(--gold);
+    color: #ffd0de;
     letter-spacing:.02em;
   }
 
@@ -562,17 +787,18 @@
     color:var(--white);
     border: 3px solid var(--ink);
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--sage-mid), var(--sage-dark));
-    box-shadow: 4px 4px 0 var(--ink);
+    background: linear-gradient(180deg, #74c98d, var(--sage-mid) 55%, #4aa266);
+    box-shadow: 4px 4px 0 var(--ink), var(--gloss);
+    text-shadow: 0 2px 0 rgba(44,74,54,.3);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease,
                 font-size .2s ease, padding .2s ease, min-width .2s ease, opacity .2s ease;
     min-width: 130px;
   }
   .choice-btn:nth-child(2){
-    background: linear-gradient(135deg, var(--pink-strong), #d97f92);
+    background: linear-gradient(180deg, #f7a6bf, var(--pink-strong) 55%, var(--rose));
   }
-  .choice-btn:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
-  .choice-btn:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+  .choice-btn:hover{ transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink), var(--gloss); }
+  .choice-btn:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink), var(--gloss); }
 
   /* Escalating yes/no gag (see "escalateOnWrong" in the questions data) —
      the correct choice grows through these stages in real font-size/padding
@@ -600,8 +826,8 @@
     padding: .8rem;
     background: var(--white);
     border: 3px solid var(--ink);
-    border-radius: 16px;
-    box-shadow: 4px 4px 0 var(--ink);
+    border-radius: 20px;
+    box-shadow: 4px 4px 0 var(--pink-strong), 4px 4px 0 3px var(--ink);
     transition: transform .15s ease, box-shadow .15s ease;
     width: clamp(128px, 41vw, 175px);
   }
@@ -618,7 +844,7 @@
   /* ===================== MODAL (feedback popup) ===================== */
   .modal-overlay{
     position:fixed; inset:0;
-    background: rgba(51,66,46,.5);
+    background: rgba(28,68,48,.55);
     display:none;
     align-items:center; justify-content:center;
     padding: 1.5rem;
@@ -627,22 +853,19 @@
   .modal-overlay.active{ display:flex; }
   .modal-box{
     position:relative;
-    background: var(--white);
+    background:
+      radial-gradient(ellipse 90% 35% at 50% 0%, rgba(255,194,212,.55), transparent 75%),
+      linear-gradient(180deg, var(--white), var(--mint));
     border: 3px solid var(--ink);
-    border-radius: 18px;
+    border-radius: 26px;
     max-width: 380px; width:100%;
     padding: 2rem 1.75rem;
     text-align:center;
-    box-shadow: 6px 6px 0 var(--ink);
+    box-shadow: 6px 6px 0 var(--pink-strong), 6px 6px 0 3px var(--ink);
     display:flex; flex-direction:column; align-items:center; gap:1rem;
     animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .modal-box::before, .modal-box::after{
-    content:""; position:absolute; width:10px; height:10px;
-    background: var(--pink-strong); border: 2px solid var(--ink);
-  }
-  .modal-box::before{ top:-6px; left:-6px; }
-  .modal-box::after{ bottom:-6px; right:-6px; }
+  /* (corner flower + leaf decorations removed from every card) */
   @keyframes popIn{ from{ opacity:0; transform: scale(.85); } to{ opacity:1; transform: scale(1); } }
   .modal-icon{ font-size:2.6rem; }
   /* Used instead of modal-icon on "trick" questions (see revealImage in the
@@ -717,12 +940,12 @@
   /* each earlier screen gets its own accent colors on that same blob layout,
      so the ride feels like distinct little "scenes" instead of one repeated
      backdrop — the final page keeps the sage/blush pairing set above */
-  .bg-glow.accent-envelope .blob-1{ background: var(--gold); }
-  .bg-glow.accent-envelope .blob-2{ background: var(--pink-strong); }
-  .bg-glow.accent-quiz-intro .blob-1{ background: var(--gold); }
-  .bg-glow.accent-quiz-intro .blob-2{ background: var(--sage-mid); }
-  .bg-glow.accent-quiz-question .blob-1{ background: var(--blush); }
-  .bg-glow.accent-quiz-question .blob-2{ background: var(--gold); }
+  .bg-glow.accent-envelope .blob-1{ background: var(--cherry-blossom); }
+  .bg-glow.accent-envelope .blob-2{ background: var(--sage); }
+  .bg-glow.accent-quiz-intro .blob-1{ background: var(--sage); }
+  .bg-glow.accent-quiz-intro .blob-2{ background: var(--pink-strong); }
+  .bg-glow.accent-quiz-question .blob-1{ background: var(--pink-strong); }
+  .bg-glow.accent-quiz-question .blob-2{ background: var(--sage-mid); }
 
   /* a cute little handwritten hint above the collage, pointing out that
      every photo on this page is tappable */
@@ -730,7 +953,11 @@
     font-family:'Caveat', cursive;
     font-weight:600;
     font-size: 1.15rem;
-    color: var(--sage-dark);
+    /* cream instead of --sage-dark, plus a soft dark glow instead of a hard
+       outline (which would fight the thin cursive strokes) — legible
+       against the photo backdrop that shows through here */
+    color: #7a3a55;
+    text-shadow: 0 0 8px rgba(255,255,255,.95), 0 0 2px #fff;
     margin: 0 0 .3rem 0;
   }
 
@@ -870,7 +1097,8 @@
   .final-title{
     font-family:'Dancing Script', cursive;
     font-size: clamp(2.4rem, 9vw, 3.4rem);
-    color: var(--sage-dark);
+    color: var(--rose);
+    text-shadow: 0 0 14px rgba(255,255,255,.95), 0 2px 0 #fff;
   }
 
   /* solid warm "letter paper" card — opaque instead of the washed-out
@@ -878,9 +1106,9 @@
      the busy sky behind it, plus the same pixel corner accents as the modal */
   .message-card{
     position:relative;
-    background: linear-gradient(165deg, #ffffff 0%, var(--cream) 100%);
+    background: linear-gradient(165deg, #ffffff 0%, #fff3f7 100%);
     border: 3px solid var(--ink);
-    border-radius: 18px;
+    border-radius: 22px;
     padding: 1.5rem 1.4rem 1.25rem;
     box-shadow: 5px 5px 0 var(--ink);
     /* a slow warm breathing glow — the letter stays a little "alive" on its own,
@@ -889,7 +1117,7 @@
   }
   @keyframes letterGlow{
     0%,100%{ box-shadow: 5px 5px 0 var(--ink); }
-    50%{ box-shadow: 5px 5px 0 var(--ink), 0 0 24px rgba(230,182,87,.5); }
+    50%{ box-shadow: 5px 5px 0 var(--ink), 0 0 26px rgba(240,139,171,.6); }
   }
   .message-card::before, .message-card::after{
     content:""; position:absolute; width:10px; height:10px;
@@ -903,23 +1131,53 @@
      pause screens use, so it reads as an actual keepsake letter. Scoped to
      ".final-letter" specifically so the pause screens' message-card is
      untouched. */
+  /* Final letter: soft ivory stationery. No ruled/margin lines and no
+     dashed divider any more — just warm paper, a second sheet peeking out
+     behind it, a strip of washi tape on top, a little flower header and a
+     comfortable reading color (warm plum-brown instead of hard green/black). */
   .message-card.final-letter{
-    background: linear-gradient(165deg, #f9efd3 0%, #f0dfb2 100%);
-    border: none;
-    border-radius: 4px;
-    padding: 2.1rem 1.5rem 1.7rem;
-    animation: none; /* the pulsing glow is dropped here — a torn-paper look reads better sitting still */
-    /* drop-shadow (not box-shadow) follows the jagged clip-path shape below,
-       instead of casting a plain rectangle behind the torn edges */
-    filter: drop-shadow(5px 5px 0 var(--ink));
-    /* a jagged torn edge along the top and bottom, straight sides — a
-       12-tooth zigzag on each, mirrored top/bottom */
-    clip-path: polygon(
-      0% 8px, 5% 0, 10% 8px, 15% 0, 20% 8px, 25% 0, 30% 8px, 35% 0, 40% 8px, 45% 0, 50% 8px, 55% 0, 60% 8px, 65% 0, 70% 8px, 75% 0, 80% 8px, 85% 0, 90% 8px, 95% 0, 100% 8px,
-      100% calc(100% - 8px), 95% 100%, 90% calc(100% - 8px), 85% 100%, 80% calc(100% - 8px), 75% 100%, 70% calc(100% - 8px), 65% 100%, 60% calc(100% - 8px), 55% 100%, 50% calc(100% - 8px), 45% 100%, 40% calc(100% - 8px), 35% 100%, 30% calc(100% - 8px), 25% 100%, 20% calc(100% - 8px), 15% 100%, 10% calc(100% - 8px), 5% 100%, 0% calc(100% - 8px)
-    );
+    --paper:#fffaf3;
+    --letter-ink:#4f3a42;          /* soft plum-brown: easy on the eyes, still high contrast */
+    background:
+      radial-gradient(ellipse 120% 60% at 50% 0%, rgba(255,226,236,.55), transparent 60%),
+      radial-gradient(ellipse 120% 50% at 50% 100%, rgba(214,240,220,.5), transparent 60%),
+      var(--paper);
+    border: 1px solid rgba(201,140,160,.35);
+    border-radius: 18px;
+    padding: 2.4rem 1.35rem 1.6rem;
+    animation: none;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 14px 34px rgba(120,60,80,.16),
+      0 3px 8px rgba(120,60,80,.08);
+    color: var(--letter-ink);
+    width: 100%;
   }
-  .message-card.final-letter::before, .message-card.final-letter::after{ display:none; } /* replaced by the photo stack above instead of little corner squares */
+  /* the second sheet tucked behind, slightly turned */
+  .message-card.final-letter::before{
+    display:block; content:""; position:absolute; inset:6px -4px -6px 4px; z-index:-1;
+    width:auto; height:auto; border:none;
+    background:#fde8ee; border-radius:18px;
+    transform: translate(6px, 8px);   /* straight offset: a tilt drifts sideways on a letter this tall */
+    box-shadow: 0 10px 24px rgba(120,60,80,.12);
+  }
+  /* washi tape holding it on the page */
+  .message-card.final-letter::after{
+    display:block; content:""; position:absolute; top:-12px; left:50%; right:auto; bottom:auto;
+    width:110px; height:28px; border:none;
+    transform: translateX(-50%) rotate(-3deg);
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.35) 0 6px, transparent 6px 12px),
+      rgba(155,216,168,.75);
+    border-radius:3px;
+    box-shadow: 0 2px 4px rgba(44,74,54,.12);
+  }
+  /* little bouquet header made from the same flowers that fell on the envelope */
+  .letter-flowers{ display:flex; justify-content:center; align-items:flex-end; gap:2px; margin: -.6rem 0 .9rem; }
+  .letter-flowers svg{ width:30px; height:30px; display:block; }
+  .letter-flowers svg.big{ width:42px; height:42px; }
+  .letter-flowers svg:nth-child(2){ transform: rotate(-14deg); }
+  .letter-flowers svg:nth-child(4){ transform: rotate(14deg); }
 
   /* ---------- Final-page "ali" photo stack ----------
      Replaces the reference's little kiss-stamp stickers with actual photos
@@ -929,7 +1187,7 @@
   .final-photo-stack{
     position:relative;
     display:flex; flex-direction:column; align-items:center;
-    margin-bottom:-22px; /* the bottom card overlaps the letter's torn top edge, sticker-style */
+    margin-bottom:14px; /* a little room so the letter's washi tape shows */
     z-index:2;
   }
   .flip-card{
@@ -981,13 +1239,38 @@
     margin:0;
     text-align:center;
   }
+  /* shared handwritten text (used by the pause note cards AND the letter) */
   .final-message{
     font-family:'Caveat', cursive;
     font-weight:600;
     font-size:1.3rem; line-height:1.4;
     max-width: 380px;
+    margin: 0 auto;
+    text-align:center;
   }
   .final-message p{ margin:0 0 .5rem 0; }
+
+  /* ---- the final letter only ---- centered, airy, with a tiny flower
+     between paragraphs and each paragraph drifting in as she scrolls */
+  .final-letter .final-message{
+    font-size: clamp(1.3rem, 5.6vw, 1.45rem); line-height:1.55;
+    color: var(--letter-ink, #4f3a42);
+    text-align:center;
+  }
+  .final-letter .final-message p{ margin:0; }
+  /* opening "Hi!" in big pink script */
+  .final-letter .final-message p:first-child{
+    font-family:'Dancing Script', cursive; font-weight:700; font-size:2.2em; line-height:1.1;
+    color: var(--rose); margin-bottom:.2rem;
+  }
+  /* plain breathing space between paragraphs */
+  .final-letter .final-message p + p{ margin-top: 1.1rem; }
+  .final-letter .final-message p.space-before{ margin-top:0; }
+  /* first line of each paragraph a touch rosier, like ink that's still fresh */
+  .final-letter .final-message p:not(:first-child)::first-line{ color:#8a3d5c; }
+  /* scroll-in reveal (JS adds .reveal, then .in when the paragraph is on screen) */
+  .final-letter .final-message p.reveal{ opacity:0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
+  .final-letter .final-message p.reveal.in{ opacity:1; transform:none; }
   .final-message p:last-child{ margin-bottom:0; }
   /* letter.txt leaves a full extra blank line before a few of these
      paragraphs (a deliberate bigger pause, not just the normal one-line
@@ -995,15 +1278,16 @@
   .final-message p.space-before{ margin-top: 1.4rem; }
 
   /* signed at the bottom of the letter itself, separated by a soft dashed rule */
+  /* sign-off: no dashed line any more, just a tiny trio of flowers as a pause */
   .letter-signoff{
-    margin-top: .6rem;
-    padding-top: .6rem;
-    border-top: 2px dashed var(--sage);
+    margin-top: 1.3rem;
     text-align: center;
   }
-  .letter-signoff .sig-name{ font-size:1.9rem; color:var(--sage-dark); text-align:right; }
+  .letter-signoff .sig-flowers{ display:flex; justify-content:center; gap:6px; margin-bottom:.6rem; }
+  .letter-signoff .sig-flowers svg{ width:18px; height:18px; }
+  .letter-signoff .sig-name{ font-size:2.1rem; color:var(--rose); text-align:center; }
 
-  .sig-divider{ font-family:'Caveat', cursive; font-size:1.2rem; color: var(--sage-dark); opacity:.75; margin-top:.25rem; }
+  .sig-divider{ font-family:'Caveat', cursive; font-size:1.25rem; color: #7b6168; margin:.25rem 0 0; text-align:center; }
 
   /* small pixel button under the letter that carries on to the goodbye card below */
   .final-continue{ margin-top:.4rem; }
@@ -1016,7 +1300,7 @@
      like its YES pill (see .btn-yes below). Tapping it fades everything
      out and tries to actually close the tab — see closeEverything() in
      the script. */
-  .bg-glow.accent-goodbye .blob-1{ background: var(--gold); }
+  .bg-glow.accent-goodbye .blob-1{ background: var(--sage); }
   .bg-glow.accent-goodbye .blob-2{ background: var(--pink-strong); }
 
   .goodbye-frame{
@@ -1026,9 +1310,54 @@
     overflow:hidden;
     background:#000;
     border: 4px solid var(--ink);
-    box-shadow: 0 0 0 4px var(--pink-strong), 6px 6px 0 var(--ink);
+    box-shadow: 0 0 0 5px var(--pink-strong), 0 0 0 8px var(--ink), 8px 8px 0 8px var(--sage-mid);
   }
-  .goodbye-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .goodbye-frame img{ width:100%; height:100%; object-fit:cover; display:block; animation: photoBreathe 7s ease-in-out infinite; }
+
+  /* ---------- making the last photo feel alive ----------
+     .goodbye-glow wraps the frame: it floats gently, has a soft pulsing
+     halo + a slowly spinning pink/gold/mint glow ring behind it, a light
+     shine that sweeps across the photo, and little sparkles twinkling
+     around the edges. */
+  .goodbye-glow, .goodbye-glow.fade-in{
+    position:relative;
+    animation: fadeInUp .9s ease both, photoFloat 4.5s ease-in-out .9s infinite;  /* fade in, then float */
+  }
+  .goodbye-glow .goodbye-frame{ position:relative; z-index:2; }
+  /* pulsing halo */
+  .goodbye-glow::before{
+    content:""; position:absolute; inset:-28%; z-index:0; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,214,228,.95) 0%, rgba(255,233,168,.55) 38%, rgba(255,255,255,0) 68%);
+    animation: haloPulse 3s ease-in-out infinite;
+  }
+  /* spinning colored glow ring */
+  .goodbye-glow::after{
+    content:""; position:absolute; inset:-30px; z-index:1; border-radius:50px;
+    background: conic-gradient(from 0deg, #f7a6bf, #ffe9a8, #9bd8a8, #ffc2d4, #f7a6bf);
+    filter: blur(20px); opacity:.9;
+    animation: ringSpin 6s linear infinite;
+  }
+  /* light sweeping across the photo every few seconds */
+  .goodbye-frame::after{
+    content:""; position:absolute; top:0; bottom:0; left:-80%; width:55%; z-index:3; pointer-events:none;
+    background: linear-gradient(105deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-12deg);
+    animation: photoShine 4s ease-in-out infinite 1.2s;
+  }
+  /* twinkling sparkles around the frame */
+  .gb-sparkle{
+    position:absolute; z-index:4; pointer-events:none; line-height:1;
+    color:#fff; text-shadow: 0 0 6px #ffd86b, 0 0 12px #ffb3c9;
+    animation: gbTwinkle 2.4s ease-in-out infinite;
+  }
+  .gb-sparkle.gold{ color:#ffe08a; }
+  .gb-sparkle.pink{ color:#ffb3c9; text-shadow: 0 0 6px #fff, 0 0 12px #f08bab; }
+  @keyframes photoFloat{ 0%,100%{ transform: translateY(0) rotate(-1.2deg); } 50%{ transform: translateY(-10px) rotate(1.2deg); } }
+  @keyframes haloPulse{ 0%,100%{ transform:scale(.92); opacity:.65; } 50%{ transform:scale(1.06); opacity:1; } }
+  @keyframes ringSpin{ to{ transform: rotate(360deg); } }
+  @keyframes photoShine{ 0%{ left:-80%; } 45%,100%{ left:130%; } }
+  @keyframes photoBreathe{ 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.06); } }
+  @keyframes gbTwinkle{ 0%,100%{ opacity:0; transform: scale(.3) rotate(0deg); } 50%{ opacity:1; transform: scale(1.15) rotate(45deg); } }
 
   .goodbye-title{
     font-size: clamp(1.5rem, 6.2vw, 2.2rem);
@@ -1041,14 +1370,15 @@
     padding: 1.05rem 2.4rem;
     font-size:1.15rem; font-weight:700;
     color:var(--white);
-    background: linear-gradient(135deg, var(--pink-strong), #d97f92);
+    background: linear-gradient(180deg, #f7a6bf, var(--pink-strong) 55%, var(--rose));
     border: 3px solid var(--ink);
     border-radius:999px;
-    box-shadow:4px 4px 0 var(--ink);
+    box-shadow:4px 4px 0 var(--sage-mid), 4px 4px 0 3px var(--ink), var(--gloss);
+    text-shadow: 0 2px 0 rgba(150,40,80,.3);
     transition: transform .15s ease, box-shadow .15s ease, opacity .5s ease;
   }
-  .btn-yes:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
-  .btn-yes:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  .btn-yes:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--sage-mid), 6px 6px 0 3px var(--ink), var(--gloss); }
+  .btn-yes:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--sage-mid), 1px 1px 0 3px var(--ink), var(--gloss); }
 
   /* ---------- "Of course!" -> closeEverything() ----------
      Fades the whole page to black before attempting window.close() —
@@ -1057,13 +1387,109 @@
      transition covering for it. */
   body.closing{ background:#000; transition: background 1s ease; }
   body.closing #app,
+  body.closing .photo-bg,
   body.closing .pixel-scene,
   body.closing .sparkle-layer,
+  body.closing .petal-layer,
   body.closing .sound-toggle,
   body.closing .scroll-hint{
     opacity:0;
     transition: opacity 1s ease;
     pointer-events:none;
+  }
+
+
+  /* ===================== FALLING PETALS (ambient, every screen) =====================
+     A few pink petals and mint leaves drifting down behind the content.
+     Built once by createPetals() in the script; fewer on small phones. */
+  .petal-layer{ position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+  .petal{
+    position:absolute; top:-40px;
+    width:14px; height:12px;
+    background: radial-gradient(circle at 30% 30%, #ffe4ec, var(--pink-strong));
+    border-radius: 150% 0 150% 0;
+    opacity:.85;
+    animation-name: petalFall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+  .petal.leaf{ background: radial-gradient(circle at 30% 30%, #d8f5de, var(--sage-mid)); border-radius: 0 150% 0 150%; }
+  @keyframes petalFall{
+    0%  { transform: translate3d(0,0,0) rotate(0deg); }
+    50% { transform: translate3d(var(--drift),55vh,0) rotate(200deg); }
+    100%{ transform: translate3d(calc(var(--drift) * -.4),112vh,0) rotate(420deg); }
+  }
+
+  /* ===================== FLORAL CIRCULAR WIPE INTRO =====================
+     The very first thing she sees: a blossom-pink cover with a flower that
+     blooms in the middle, then the cover opens in a growing circle (the
+     "wipe") with a ring of spinning flowers riding its edge, revealing the
+     site underneath. The cover's hole is a CSS mask set every frame by
+     runFloralIntro() in the script. Tap anywhere to skip the wait. */
+  html.intro-lock, html.intro-lock body{ overflow:hidden; }
+  .floral-intro{ position:fixed; inset:0; z-index:9999; pointer-events:auto; }
+  .floral-intro.done{ pointer-events:none; }
+  .fi-cover{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cg fill='%23ffffff' fill-opacity='.45'%3E%3Ccircle cx='18' cy='12' r='4'/%3E%3Ccircle cx='18' cy='24' r='4'/%3E%3Ccircle cx='12' cy='18' r='4'/%3E%3Ccircle cx='24' cy='18' r='4'/%3E%3C/g%3E%3Ccircle cx='18' cy='18' r='2.6' fill='%23f08bab' fill-opacity='.5'/%3E%3Cpath d='M54 46c-1.6-3-6-2.8-6 1c0 3 3 4.6 6 7c3-2.4 6-4 6-7c0-3.8-4.4-4-6-1z' fill='%235bb877' fill-opacity='.25'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 50% 45%, #fff3f7 0%, rgba(255,243,247,0) 55%),
+      linear-gradient(165deg, #ffd3e0 0%, #ffe6ee 45%, #dff3e3 100%);
+    background-size: 72px 72px, auto, auto;
+  }
+  .fi-center{ display:flex; flex-direction:column; align-items:center; gap:.4rem; transition: transform .5s cubic-bezier(.5,-0.4,.7,1), opacity .4s ease; }
+  .floral-intro.wiping .fi-center{ transform: scale(1.35); opacity:0; }
+  .fi-bloom{ width: min(52vw, 210px); height:auto; overflow:visible; animation: fiSway 3s ease-in-out infinite; }
+  .fi-bloom .fi-leaf{ transform-box: view-box; transform-origin: 50% 50%; animation: fiGrow .7s cubic-bezier(.34,1.56,.64,1) both; }
+  .fi-bloom .fi-petal{ transform-box: view-box; transform-origin: 50% 50%; animation: fiGrow .6s cubic-bezier(.34,1.56,.64,1) both; }
+  .fi-bloom .fi-heart{ transform-box: view-box; transform-origin: 50% 50%; animation: fiGrow .5s cubic-bezier(.34,1.56,.64,1) 1s both; }
+  @keyframes fiGrow{ from{ transform: scale(0) rotate(-40deg); opacity:0; } to{ transform: scale(1) rotate(0); opacity:1; } }
+  @keyframes fiSway{ 0%,100%{ transform: rotate(-4deg); } 50%{ transform: rotate(4deg); } }
+  .fi-title{
+    font-family:'Dancing Script', cursive; font-weight:700;
+    font-size: clamp(2.2rem, 10vw, 3rem);
+    color: var(--rose); margin:.2rem 0 0;
+    text-shadow: 0 2px 0 #fff, 0 0 14px rgba(255,255,255,.9);
+    animation: fadeInUp .8s ease .9s both;
+  }
+  .fi-sub{
+    font-family:'Pixelify Sans', sans-serif; font-weight:600; font-size:.85rem;
+    letter-spacing:.12em; text-transform:uppercase;
+    color: var(--sage-dark); margin:0;
+    animation: fadeInUp .8s ease 1.2s both;
+  }
+  /* little flower clusters in two corners, gently swaying */
+  .fi-deco{ position:absolute; width: min(42vw, 170px); height:auto; animation: fiSway 4s ease-in-out infinite; }
+  .fi-deco-tl{ top:-18px; left:-22px; transform-origin: 0 0; }
+  .fi-deco-br{ bottom:-18px; right:-22px; transform-origin: 100% 100%; animation-delay:-2s; }
+  /* the ring of flowers that rides the edge of the opening circle */
+  .fi-ring{
+    position:absolute; left:50%; top:50%;
+    width:0; height:0;
+    transform: translate(-50%,-50%);
+    opacity:0;
+    pointer-events:none;
+  }
+  .fi-ring-spin{ position:absolute; inset:0; animation: spinSlow 5s linear infinite; }
+  .fi-ring-flower{
+    position:absolute;
+    width: calc(30px + 26px * var(--grow, 0));
+    height: calc(30px + 26px * var(--grow, 0));
+    transform: translate(-50%,-50%);
+  }
+  .fi-ring-flower svg{ width:100%; height:100%; display:block; animation: spinSlow 2.4s linear infinite; filter: drop-shadow(0 2px 2px rgba(44,74,54,.25)); }
+  .fi-ring-flower:nth-child(odd) svg{ animation-direction: reverse; }
+  .fi-skip{
+    position:absolute; bottom: max(18px, env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+    font-family:'Quicksand', sans-serif; font-size:.75rem; font-weight:700; color: var(--sage-dark); opacity:.6;
+    animation: fadeInUp .8s ease 1.4s both;
+  }
+  .floral-intro.wiping .fi-skip{ opacity:0; transition: opacity .2s; }
+  @media (prefers-reduced-motion: reduce){
+    .floral-intro{ transition: opacity .5s ease; }
+    .floral-intro.done{ opacity:0; }
   }
 
   @media (min-width: 640px){
@@ -1073,21 +1499,209 @@
 </head>
 <body>
 
-<!-- =======================================================
-     FIXED PIXEL-ART SCENE — guide-inspired background, sits behind
-     every screen: drifting clouds + jagged 8-bit hill skyline.
-     ======================================================= -->
-<div class="pixel-scene" aria-hidden="true">
-  <div class="pixel-cloud cloud-a"></div>
-  <div class="pixel-cloud cloud-b"></div>
-  <div class="pixel-cloud cloud-c"></div>
-  <div class="pixel-hill hill-back"></div>
-  <div class="pixel-hill hill-front"></div>
+<!-- Rose drawings for the rose shower: a front view (open bloom), a back
+     view (red petals with the green sepal star in the middle) and a loose
+     petal. Reused by every falling rose via <use href="#rose-...">. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="rsPetal" cx=".5" cy=".55" r=".6">
+      <stop offset="0" stop-color="#ff4a5c"/><stop offset=".55" stop-color="#d4142e"/><stop offset="1" stop-color="#7c0616"/>
+    </radialGradient>
+    <radialGradient id="rsInner" cx=".45" cy=".4" r=".7">
+      <stop offset="0" stop-color="#e8283f"/><stop offset="1" stop-color="#8a0a1c"/>
+    </radialGradient>
+    <linearGradient id="rsSepal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f9a3c"/><stop offset="1" stop-color="#1f5a24"/>
+    </linearGradient>
+    <linearGradient id="tlPink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff9fbd"/><stop offset="1" stop-color="#e5638e"/>
+    </linearGradient>
+    <radialGradient id="fmnBlue" cx=".5" cy=".5" r=".6">
+      <stop offset="0" stop-color="#cfe0ff"/><stop offset="1" stop-color="#7f9ff0"/>
+    </radialGradient>
+    <!-- sunflower: long pointed petal; daisy: slim rounded petal -->
+    <path id="sfPetal" d="M50 50 C44 40 44 18 50 4 C56 18 56 40 50 50Z"/>
+    <path id="dsPetal" d="M50 50 C46 40 45 16 50 8 C55 16 54 40 50 50Z"/>
+    <!-- one forget-me-not bloom: 5 round petals, yellow-white eye -->
+    <g id="fmnBloom">
+      <g fill="url(#fmnBlue)" stroke="#5b7bd0" stroke-width="1.6">
+        <circle cx="50" cy="30" r="15"/><circle cx="69" cy="44" r="15"/><circle cx="62" cy="67" r="15"/><circle cx="38" cy="67" r="15"/><circle cx="31" cy="44" r="15"/>
+      </g>
+      <circle cx="50" cy="51" r="9" fill="#fff6d6"/><circle cx="50" cy="51" r="4.5" fill="#ffc93c"/>
+    </g>
+    <!-- one rounded petal shape, pointing up from the center (50,50) -->
+    <path id="rsPetalShape" d="M50 54 C24 50 14 22 32 8 C42 1 58 1 68 8 C86 22 76 50 50 54Z"/>
+  </defs>
+
+  <symbol id="rose-front" viewBox="0 0 100 100">
+    <!-- full, ruffled bloom: 4 rings of wide overlapping petals, darker toward the middle -->
+    <g fill="url(#rsPetal)" stroke="#5e0410" stroke-width="1.1"><use href="#rsPetalShape" transform="rotate(0.0 50 50)"/><use href="#rsPetalShape" transform="rotate(60.0 50 50)"/><use href="#rsPetalShape" transform="rotate(120.0 50 50)"/><use href="#rsPetalShape" transform="rotate(180.0 50 50)"/><use href="#rsPetalShape" transform="rotate(240.0 50 50)"/><use href="#rsPetalShape" transform="rotate(300.0 50 50)"/></g>
+    <g fill="url(#rsPetal)" stroke="#5e0410" stroke-width="1" transform="translate(50 50) scale(.8) translate(-50 -50)"><use href="#rsPetalShape" transform="rotate(30.0 50 50)"/><use href="#rsPetalShape" transform="rotate(102.0 50 50)"/><use href="#rsPetalShape" transform="rotate(174.0 50 50)"/><use href="#rsPetalShape" transform="rotate(246.0 50 50)"/><use href="#rsPetalShape" transform="rotate(318.0 50 50)"/></g>
+    <g fill="url(#rsInner)" stroke="#5e0410" stroke-width="1" transform="translate(50 50) scale(.6) translate(-50 -50)"><use href="#rsPetalShape" transform="rotate(66.0 50 50)"/><use href="#rsPetalShape" transform="rotate(138.0 50 50)"/><use href="#rsPetalShape" transform="rotate(210.0 50 50)"/><use href="#rsPetalShape" transform="rotate(282.0 50 50)"/><use href="#rsPetalShape" transform="rotate(354.0 50 50)"/></g>
+    <g fill="url(#rsInner)" stroke="#560310" stroke-width="1.2" transform="translate(50 50) scale(.4) translate(-50 -50)"><use href="#rsPetalShape" transform="rotate(20.0 50 50)"/><use href="#rsPetalShape" transform="rotate(110.0 50 50)"/><use href="#rsPetalShape" transform="rotate(200.0 50 50)"/><use href="#rsPetalShape" transform="rotate(290.0 50 50)"/></g>
+    <!-- cupped bud center with a spiral fold -->
+    <circle cx="50" cy="50" r="8" fill="#9a0a20" stroke="#4e030d" stroke-width="1"/>
+    <path d="M50 50 m-1.5 -1 a2.5 2.5 0 1 1 3 2.5 a5 5 0 1 1 -7 -4" fill="none" stroke="#4e030d" stroke-width="1.4" stroke-linecap="round"/>
+    <!-- light catching the top petal edges -->
+    <path d="M34 12 Q50 2 66 12" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M40 26 Q50 20 60 26" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- SUNFLOWER: adoration + loyalty -->
+  <symbol id="fl-sunflower" viewBox="0 0 100 100">
+    <g fill="#f2b417" stroke="#b67a06" stroke-width="1"><use href="#sfPetal" transform="rotate(12.0 50 50)"/><use href="#sfPetal" transform="rotate(37.7 50 50)"/><use href="#sfPetal" transform="rotate(63.4 50 50)"/><use href="#sfPetal" transform="rotate(89.1 50 50)"/><use href="#sfPetal" transform="rotate(114.9 50 50)"/><use href="#sfPetal" transform="rotate(140.6 50 50)"/><use href="#sfPetal" transform="rotate(166.3 50 50)"/><use href="#sfPetal" transform="rotate(192.0 50 50)"/><use href="#sfPetal" transform="rotate(217.7 50 50)"/><use href="#sfPetal" transform="rotate(243.4 50 50)"/><use href="#sfPetal" transform="rotate(269.1 50 50)"/><use href="#sfPetal" transform="rotate(294.9 50 50)"/><use href="#sfPetal" transform="rotate(320.6 50 50)"/><use href="#sfPetal" transform="rotate(346.3 50 50)"/></g>
+    <g fill="#ffd23f" stroke="#c98a08" stroke-width="1"><use href="#sfPetal" transform="rotate(0.0 50 50)"/><use href="#sfPetal" transform="rotate(25.7 50 50)"/><use href="#sfPetal" transform="rotate(51.4 50 50)"/><use href="#sfPetal" transform="rotate(77.1 50 50)"/><use href="#sfPetal" transform="rotate(102.9 50 50)"/><use href="#sfPetal" transform="rotate(128.6 50 50)"/><use href="#sfPetal" transform="rotate(154.3 50 50)"/><use href="#sfPetal" transform="rotate(180.0 50 50)"/><use href="#sfPetal" transform="rotate(205.7 50 50)"/><use href="#sfPetal" transform="rotate(231.4 50 50)"/><use href="#sfPetal" transform="rotate(257.1 50 50)"/><use href="#sfPetal" transform="rotate(282.9 50 50)"/><use href="#sfPetal" transform="rotate(308.6 50 50)"/><use href="#sfPetal" transform="rotate(334.3 50 50)"/></g>
+    <circle cx="50" cy="50" r="16" fill="#6b3b14" stroke="#3f200a" stroke-width="1.2"/>
+    <circle cx="50" cy="50" r="10" fill="#4a250b"/>
+    <g fill="#a3651f" fill-opacity=".8"><circle cx="48.6" cy="51.3" r="1.3"/><circle cx="50.2" cy="47.3" r="1.3"/><circle cx="52.0" cy="52.6" r="1.3"/><circle cx="46.3" cy="49.3" r="1.3"/><circle cx="53.6" cy="47.7" r="1.3"/><circle cx="48.8" cy="54.5" r="1.3"/><circle cx="47.7" cy="45.5" r="1.3"/><circle cx="55.0" cy="51.8" r="1.3"/><circle cx="44.7" cy="52.2" r="1.3"/><circle cx="52.5" cy="44.6" r="1.3"/><circle cx="51.9" cy="56.0" r="1.3"/><circle cx="44.3" cy="46.7" r="1.3"/><circle cx="56.7" cy="48.5" r="1.3"/><circle cx="45.9" cy="55.8" r="1.3"/><circle cx="49.1" cy="42.7" r="1.3"/><circle cx="55.8" cy="54.9" r="1.3"/><circle cx="42.2" cy="50.3" r="1.3"/><circle cx="55.7" cy="44.3" r="1.3"/><circle cx="49.6" cy="58.3" r="1.3"/><circle cx="44.6" cy="43.5" r="1.3"/><circle cx="58.6" cy="51.2" r="1.3"/><circle cx="42.7" cy="55.1" r="1.3"/><circle cx="52.0" cy="41.1" r="1.3"/><circle cx="54.6" cy="58.1" r="1.3"/><circle cx="40.9" cy="47.1" r="1.3"/><circle cx="58.8" cy="45.9" r="1.3"/><circle cx="46.2" cy="59.1" r="1.3"/><circle cx="46.6" cy="40.5" r="1.3"/><circle cx="59.1" cy="54.8" r="1.3"/><circle cx="39.9" cy="52.7" r="1.3"/><circle cx="55.7" cy="41.1" r="1.3"/><circle cx="51.8" cy="60.6" r="1.3"/><circle cx="41.4" cy="43.3" r="1.3"/><circle cx="61.0" cy="49.1" r="1.3"/><circle cx="42.4" cy="58.3" r="1.3"/><circle cx="50.1" cy="38.6" r="1.3"/><circle cx="57.8" cy="58.6" r="1.3"/><circle cx="38.3" cy="48.9" r="1.3"/><circle cx="59.5" cy="42.8" r="1.3"/></g>
+  </symbol>
+
+  <!-- PINK TULIP: caring + perfect love (side view, short stem) -->
+  <symbol id="fl-tulip" viewBox="0 0 100 100">
+    <path d="M50 58 Q52 78 48 96" stroke="#4aa266" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M49 86 Q30 80 28 62 Q42 68 49 80Z" fill="#5bb877" stroke="#2f7a4c" stroke-width="1"/>
+    <path d="M30 26 Q26 50 38 60 Q50 66 62 60 Q74 50 70 26 L60 36 L50 18 L40 36Z" fill="url(#tlPink)" stroke="#c2456f" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M40 36 Q38 52 50 62 Q62 52 60 36 L50 18Z" fill="#ffb3c9" stroke="#c2456f" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M45 30 Q44 44 50 52" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- DAISY: pure, loyal love -->
+  <symbol id="fl-daisy" viewBox="0 0 100 100">
+    <g fill="#ffffff" stroke="#d9cfc4" stroke-width="1"><use href="#dsPetal" transform="rotate(11.0 50 50)"/><use href="#dsPetal" transform="rotate(33.5 50 50)"/><use href="#dsPetal" transform="rotate(56.0 50 50)"/><use href="#dsPetal" transform="rotate(78.5 50 50)"/><use href="#dsPetal" transform="rotate(101.0 50 50)"/><use href="#dsPetal" transform="rotate(123.5 50 50)"/><use href="#dsPetal" transform="rotate(146.0 50 50)"/><use href="#dsPetal" transform="rotate(168.5 50 50)"/><use href="#dsPetal" transform="rotate(191.0 50 50)"/><use href="#dsPetal" transform="rotate(213.5 50 50)"/><use href="#dsPetal" transform="rotate(236.0 50 50)"/><use href="#dsPetal" transform="rotate(258.5 50 50)"/><use href="#dsPetal" transform="rotate(281.0 50 50)"/><use href="#dsPetal" transform="rotate(303.5 50 50)"/><use href="#dsPetal" transform="rotate(326.0 50 50)"/><use href="#dsPetal" transform="rotate(348.5 50 50)"/></g>
+    <g fill="#fffaf2" stroke="#d9cfc4" stroke-width="1"><use href="#dsPetal" transform="rotate(0.0 50 50)"/><use href="#dsPetal" transform="rotate(22.5 50 50)"/><use href="#dsPetal" transform="rotate(45.0 50 50)"/><use href="#dsPetal" transform="rotate(67.5 50 50)"/><use href="#dsPetal" transform="rotate(90.0 50 50)"/><use href="#dsPetal" transform="rotate(112.5 50 50)"/><use href="#dsPetal" transform="rotate(135.0 50 50)"/><use href="#dsPetal" transform="rotate(157.5 50 50)"/><use href="#dsPetal" transform="rotate(180.0 50 50)"/><use href="#dsPetal" transform="rotate(202.5 50 50)"/><use href="#dsPetal" transform="rotate(225.0 50 50)"/><use href="#dsPetal" transform="rotate(247.5 50 50)"/><use href="#dsPetal" transform="rotate(270.0 50 50)"/><use href="#dsPetal" transform="rotate(292.5 50 50)"/><use href="#dsPetal" transform="rotate(315.0 50 50)"/><use href="#dsPetal" transform="rotate(337.5 50 50)"/></g>
+    <circle cx="50" cy="50" r="11" fill="#ffc93c" stroke="#e09a12" stroke-width="1.2"/>
+    <circle cx="47" cy="47" r="4" fill="#fff" fill-opacity=".45"/>
+  </symbol>
+
+  <!-- FORGET-ME-NOT: true love that lasts, "don't forget me" (a little cluster of 3) -->
+  <symbol id="fl-forgetmenot" viewBox="0 0 100 100">
+    <use href="#fmnBloom" transform="translate(50 50) scale(.55) translate(-50 -50) translate(4 30)"/>
+    <use href="#fmnBloom" transform="translate(50 50) scale(.5) translate(-50 -50) translate(-34 -30)"/>
+    <use href="#fmnBloom" transform="translate(50 50) scale(.45) translate(-50 -50) translate(44 -38)"/>
+  </symbol>
+
+  <symbol id="pink-petal" viewBox="0 0 100 100">
+    <path d="M50 92 C22 78 14 40 30 18 C40 6 60 6 70 18 C86 40 78 78 50 92Z" fill="url(#tlPink)" stroke="#c2456f" stroke-width="2"/>
+  </symbol>
+  <symbol id="rose-petal" viewBox="0 0 100 100">
+    <path d="M50 92 C22 78 14 40 30 18 C40 6 60 6 70 18 C86 40 78 78 50 92Z" fill="url(#rsPetal)" stroke="#6a0512" stroke-width="2"/>
+    <path d="M50 86 Q46 50 50 22" fill="none" stroke="#7c0616" stroke-opacity=".4" stroke-width="2"/>
+  </symbol>
+</svg>
+
+<!-- falling roses live here; see ROSE SHOWER in CSS + JS -->
+<div class="rose-layer" id="roseLayer" aria-hidden="true"></div>
+
+<!-- Shared flower + leaf drawings, reused by the intro, the loading ring and
+     the wipe's flower ring via <use href="#fl-bloom">. Petals take the
+     colour of whatever element they sit in (CSS "color"). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="fl-bloom" viewBox="-50 -50 100 100">
+      <g fill="currentColor">
+        <ellipse cx="0" cy="-24" rx="17" ry="24"/>
+        <ellipse cx="0" cy="-24" rx="17" ry="24" transform="rotate(72)"/>
+        <ellipse cx="0" cy="-24" rx="17" ry="24" transform="rotate(144)"/>
+        <ellipse cx="0" cy="-24" rx="17" ry="24" transform="rotate(216)"/>
+        <ellipse cx="0" cy="-24" rx="17" ry="24" transform="rotate(288)"/>
+      </g>
+      <g fill="#ffffff" fill-opacity=".35">
+        <ellipse cx="0" cy="-26" rx="6" ry="12"/>
+        <ellipse cx="0" cy="-26" rx="6" ry="12" transform="rotate(72)"/>
+        <ellipse cx="0" cy="-26" rx="6" ry="12" transform="rotate(144)"/>
+        <ellipse cx="0" cy="-26" rx="6" ry="12" transform="rotate(216)"/>
+        <ellipse cx="0" cy="-26" rx="6" ry="12" transform="rotate(288)"/>
+      </g>
+      <circle r="12" fill="#ffe9a8" stroke="#f3c45f" stroke-width="2"/>
+    </symbol>
+    <symbol id="fl-leaf" viewBox="-30 -50 60 100">
+      <path d="M0 46 C -30 14 -22 -26 0 -46 C 22 -26 30 14 0 46 Z" fill="currentColor"/>
+      <path d="M0 40 L0 -36" stroke="#ffffff" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- FLORAL CIRCULAR WIPE INTRO — plays once the moment the page opens,
+     then removes itself (see runFloralIntro() in the script). -->
+<div class="floral-intro" id="floralIntro" aria-hidden="true">
+  <div class="fi-cover" id="fiCover">
+    <svg class="fi-deco fi-deco-tl" viewBox="0 0 160 160">
+      <use href="#fl-leaf" x="58" y="40" width="30" height="50" style="color:#5bb877" transform="rotate(-35 73 65)"/>
+      <use href="#fl-leaf" x="20" y="70" width="26" height="44" style="color:#9bd8a8" transform="rotate(-80 33 92)"/>
+      <use href="#fl-bloom" x="10" y="10" width="64" height="64" style="color:#f08bab"/>
+      <use href="#fl-bloom" x="64" y="6" width="40" height="40" style="color:#ffc2d4"/>
+      <use href="#fl-bloom" x="4" y="66" width="38" height="38" style="color:#d9628a"/>
+    </svg>
+    <svg class="fi-deco fi-deco-br" viewBox="0 0 160 160">
+      <use href="#fl-leaf" x="72" y="70" width="30" height="50" style="color:#5bb877" transform="rotate(145 87 95)"/>
+      <use href="#fl-leaf" x="114" y="46" width="26" height="44" style="color:#9bd8a8" transform="rotate(100 127 68)"/>
+      <use href="#fl-bloom" x="86" y="86" width="64" height="64" style="color:#f08bab"/>
+      <use href="#fl-bloom" x="56" y="114" width="40" height="40" style="color:#ffc2d4"/>
+      <use href="#fl-bloom" x="118" y="56" width="38" height="38" style="color:#d9628a"/>
+    </svg>
+
+    <div class="fi-center" id="fiCenter">
+      <!-- the big flower: leaves, then five petals pop open one by one, then a heart center -->
+      <svg class="fi-bloom" viewBox="-100 -100 200 200">
+        <g class="fi-leaf" style="animation-delay:.05s"><path d="M0 0 C -40 20 -78 10 -92 -10 C -60 -30 -24 -22 0 0 Z" fill="#5bb877" transform="rotate(-20)"/></g>
+        <g class="fi-leaf" style="animation-delay:.15s"><path d="M0 0 C 40 20 78 10 92 -10 C 60 -30 24 -22 0 0 Z" fill="#7fcb94" transform="rotate(25)"/></g>
+        <g class="fi-petal" style="animation-delay:.25s"><ellipse cx="0" cy="-42" rx="30" ry="42" fill="#f7a6bf" stroke="#2c4a36" stroke-width="3"/></g>
+        <g class="fi-petal" style="animation-delay:.37s"><ellipse cx="0" cy="-42" rx="30" ry="42" fill="#f08bab" stroke="#2c4a36" stroke-width="3" transform="rotate(72)"/></g>
+        <g class="fi-petal" style="animation-delay:.49s"><ellipse cx="0" cy="-42" rx="30" ry="42" fill="#f7a6bf" stroke="#2c4a36" stroke-width="3" transform="rotate(144)"/></g>
+        <g class="fi-petal" style="animation-delay:.61s"><ellipse cx="0" cy="-42" rx="30" ry="42" fill="#f08bab" stroke="#2c4a36" stroke-width="3" transform="rotate(216)"/></g>
+        <g class="fi-petal" style="animation-delay:.73s"><ellipse cx="0" cy="-42" rx="30" ry="42" fill="#f7a6bf" stroke="#2c4a36" stroke-width="3" transform="rotate(288)"/></g>
+        <g class="fi-heart">
+          <circle r="24" fill="#ffe9a8" stroke="#2c4a36" stroke-width="3"/>
+          <path d="M0 -4 c-3 -6 -12 -5 -12 2 c0 6 6 9 12 14 c6 -5 12 -8 12 -14 c0 -7 -9 -8 -12 -2 z" fill="#d9628a"/>
+        </g>
+      </svg>
+      <p class="fi-title">for <span id="fiName">Allysa</span></p>
+      <p class="fi-sub">a little birthday surprise</p>
+    </div>
+    <p class="fi-skip">tap to open</p>
+  </div>
+  <div class="fi-ring" id="fiRing"><div class="fi-ring-spin" id="fiRingSpin"></div></div>
 </div>
+
+<!-- falling petals + leaves, filled in by createPetals() -->
+<div class="petal-layer" id="petalLayer" aria-hidden="true"></div>
+
+<!-- Confetti-to-tulips photo backdrop — behind every screen except the
+     loading gate and the black "iPhone hello" screens (see .photo-bg
+     comment above). -->
+<div class="photo-bg" aria-hidden="true">
+  <span class="bg-bokeh pink" style="left:8%;top:18%;width:90px;height:90px;animation-delay:-0.0s"></span>
+  <span class="bg-bokeh gold" style="left:22%;top:62%;width:60px;height:60px;animation-delay:-0.9s"></span>
+  <span class="bg-bokeh mint" style="left:78%;top:14%;width:110px;height:110px;animation-delay:-1.8s"></span>
+  <span class="bg-bokeh pink" style="left:90%;top:48%;width:70px;height:70px;animation-delay:-2.7s"></span>
+  <span class="bg-bokeh gold" style="left:60%;top:30%;width:50px;height:50px;animation-delay:-3.6s"></span>
+  <span class="bg-bokeh mint" style="left:36%;top:10%;width:70px;height:70px;animation-delay:-4.5s"></span>
+  <span class="bg-bokeh mint" style="left:14%;top:42%;width:40px;height:40px;animation-delay:-5.4s"></span>
+  <span class="bg-bokeh pink" style="left:70%;top:58%;width:80px;height:80px;animation-delay:-6.3s"></span>
+  <span class="bg-bokeh gold" style="left:48%;top:52%;width:36px;height:36px;animation-delay:-7.2s"></span>
+  <span class="bg-bokeh gold" style="left:94%;top:26%;width:44px;height:44px;animation-delay:-8.1s"></span>
+  <span class="bg-cloud c1"></span>
+  <span class="bg-cloud c2"></span>
+  <svg class="bg-hills" viewBox="0 0 1600 420" preserveAspectRatio="xMidYMax slice">
+    <!-- far hill (misty) -->
+    <path d="M0 250 Q200 170 420 220 T860 200 T1280 215 T1600 190 V420 H0Z" fill="#cdebd4"/>
+    <!-- middle hill + its little tulips -->
+    <path d="M0 300 Q260 230 520 280 T1040 265 T1600 270 V420 H0Z" fill="#a8dcb5"/>
+    <g transform="translate(35 298) scale(0.55)"><g class="sway" style="animation-delay:-2.6s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f7a6bf"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(122 297) scale(0.55)"><g class="sway" style="animation-delay:-2.33s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffc2d4"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(244 310) scale(0.55)"><g class="sway" style="animation-delay:-0.15s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#d9628a"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(323 307) scale(0.55)"><g class="sway" style="animation-delay:-0.96s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(422 307) scale(0.55)"><g class="sway" style="animation-delay:-3.31s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(503 301) scale(0.55)"><g class="sway" style="animation-delay:-3.79s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(613 306) scale(0.55)"><g class="sway" style="animation-delay:-3.91s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(691 298) scale(0.55)"><g class="sway" style="animation-delay:-1.68s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffc2d4"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(802 297) scale(0.55)"><g class="sway" style="animation-delay:-1.23s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(906 299) scale(0.55)"><g class="sway" style="animation-delay:-2.33s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(995 300) scale(0.55)"><g class="sway" style="animation-delay:-0.39s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffc2d4"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1092 296) scale(0.55)"><g class="sway" style="animation-delay:-0.24s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1171 309) scale(0.55)"><g class="sway" style="animation-delay:-1.71s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1270 308) scale(0.55)"><g class="sway" style="animation-delay:-3.69s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1366 303) scale(0.55)"><g class="sway" style="animation-delay:-3.18s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#d9628a"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1472 301) scale(0.55)"><g class="sway" style="animation-delay:-2.3s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1561 309) scale(0.55)"><g class="sway" style="animation-delay:-2.92s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffc2d4"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g>
+    <!-- front hill + bigger tulips -->
+    <path d="M0 380 Q300 320 640 360 T1240 345 T1600 350 V420 H0Z" fill="#7cc993"/>
+    <g transform="translate(18 400) scale(0.95)"><g class="sway" style="animation-delay:-0.47s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(146 393) scale(0.95)"><g class="sway" style="animation-delay:-0.61s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffc2d4"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(271 397) scale(0.95)"><g class="sway" style="animation-delay:-3.85s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(364 399) scale(0.95)"><g class="sway" style="animation-delay:-3.16s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(500 396) scale(0.95)"><g class="sway" style="animation-delay:-2.38s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffc2d4"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(637 398) scale(0.95)"><g class="sway" style="animation-delay:-3.36s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(737 398) scale(0.95)"><g class="sway" style="animation-delay:-0.24s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f08bab"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(859 401) scale(0.95)"><g class="sway" style="animation-delay:-3.97s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#ffe9a8"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(988 395) scale(0.95)"><g class="sway" style="animation-delay:-3.55s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f7a6bf"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1102 391) scale(0.95)"><g class="sway" style="animation-delay:-1.42s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f7a6bf"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1239 392) scale(0.95)"><g class="sway" style="animation-delay:-0.24s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#f7a6bf"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1338 393) scale(0.95)"><g class="sway" style="animation-delay:-1.59s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#d9628a"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1471 392) scale(0.95)"><g class="sway" style="animation-delay:-1.8s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#d9628a"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g><g transform="translate(1595 395) scale(0.95)"><g class="sway" style="animation-delay:-3.28s"><path d="M0 0 Q2 -28 0 -52" stroke="#4aa266" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M0 -10 Q-16 -22 -12 -40 Q-2 -26 0 -14Z" fill="#5bb877"/><path d="M0 -18 Q15 -28 12 -44 Q3 -32 0 -22Z" fill="#74c98d"/><path d="M-11 -66 Q-12 -50 0 -48 Q12 -50 11 -66 L6 -58 L0 -70 L-6 -58Z" fill="#d9628a"/><path d="M-4 -60 Q0 -52 4 -60 L0 -70Z" fill="#fff" fill-opacity=".25"/></g></g>
+  </svg>
+</div>
+
+<!-- Faint heart tile, sits over the photo on every screen. -->
+<div class="pixel-scene" aria-hidden="true"></div>
 
 <!-- Ambient twinkling sparkles (the little sparkle effect from the guide video) —
      always on, on top of the pixel scene, behind the actual screen content. -->
 <div class="sparkle-layer" id="sparkleLayer" aria-hidden="true"></div>
+
+<div class="read-progress" id="readProgress" aria-hidden="true"></div>
 
 <div id="app">
 
@@ -1104,10 +1718,22 @@
        ======================================================= -->
   <section class="screen active" id="screen-loading">
     <div class="screen-content">
-      <div class="loading-cake" aria-hidden="true">
-        <span class="loading-sparkle loading-sparkle-a">✨</span>
-        <span class="loading-cake-emoji">🎂</span>
-        <span class="loading-sparkle loading-sparkle-b">✨</span>
+      <div class="loading-bloom" aria-hidden="true">
+        <div class="loading-bloom-ring">
+          <span class="lb-flower" style="--i:0"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:1"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:2"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:3"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:4"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:5"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:6"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+          <span class="lb-flower" style="--i:7"><svg viewBox="0 0 100 100"><use href="#fl-bloom" width="100" height="100"/></svg></span>
+        </div>
+        <div class="loading-cake">
+          <span class="loading-sparkle loading-sparkle-a">✨</span>
+          <span class="loading-cake-emoji">🎂</span>
+          <span class="loading-sparkle loading-sparkle-b">✨</span>
+        </div>
       </div>
       <h1 class="loading-title">Wait lang bagal ng data mo, hmp</h1>
       <div class="loading-bar-track">
@@ -1125,16 +1751,66 @@
     <div class="bg-glow accent-envelope"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <div class="envelope-wrap" id="envelopeWrap">
-        <!-- (a) SWAP/EDIT: env1 -> env2 -> env3 is the sealed-to-open flipbook,
-             swapped frame by frame in JS on tap. env3 is the wide-open shot with
-             the paper peeking out — the "next page" button sits over its blank
-             white paper area so it reads as tapping the letter itself. -->
-        <div class="envelope-frames" id="envelope">
-          <!-- two stacked layers crossfade between frames — see the .envelope-layer comment above -->
-          <img class="envelope-layer front" id="envelopeImgA" src="env1.svg" alt="a sealed envelope">
-          <img class="envelope-layer" id="envelopeImgB" src="env1.svg" alt="" aria-hidden="true">
-          <div class="envelope-next-btn-pos" id="btnEnvelopeNextPos" hidden>
-            <button class="btn-primary envelope-next-btn" id="btnEnvelopeNext" type="button">Open letter</button>
+        <!-- layered envelope: back -> letter -> pocket -> flap -> seal.
+             Tap anywhere on it to open (see .env-* CSS above). -->
+        <div class="envelope-frames" id="envelope" role="img" aria-label="a sealed envelope">
+          <div class="env-back"></div>
+
+          <div class="env-letter">
+            <p class="env-letter-to"><small>a little letter for</small>Allysa</p>
+            <div class="envelope-next-btn-pos" id="btnEnvelopeNextPos" hidden>
+              <button class="btn-primary envelope-next-btn" id="btnEnvelopeNext" type="button">Open letter</button>
+            </div>
+          </div>
+
+          <!-- front pocket (viewBox 100x70 = the envelope's 10:7 shape) -->
+          <svg class="env-pocket" viewBox="0 0 100 70" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="envSide" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#fff3ec"/><stop offset="1" stop-color="#fde4e6"/>
+              </linearGradient>
+              <linearGradient id="envBottom" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fffaf6"/><stop offset="1" stop-color="#ffeef0"/>
+              </linearGradient>
+            </defs>
+            <path d="M1.2 3 L46 38 Q50 41 54 38 L98.8 3 V66 Q98.8 68.8 96 68.8 H4 Q1.2 68.8 1.2 66Z" fill="url(#envSide)" stroke="#2c4a36" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            <path d="M1.5 68.5 L44 34 Q50 29.5 56 34 L98.5 68.5Z" fill="url(#envBottom)" stroke="#2c4a36" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            <!-- tiny stitched hearts on the bottom fold -->
+            <g fill="#f08bab" fill-opacity=".7">
+              <path d="M18 60c-.6-1.2-2.4-1.1-2.4.4c0 1.2 1.2 1.9 2.4 2.8c1.2-.9 2.4-1.6 2.4-2.8c0-1.5-1.8-1.6-2.4-.4z"/>
+              <path d="M82 60c-.6-1.2-2.4-1.1-2.4.4c0 1.2 1.2 1.9 2.4 2.8c1.2-.9 2.4-1.6 2.4-2.8c0-1.5-1.8-1.6-2.4-.4z"/>
+            </g>
+          </svg>
+
+          <!-- top flap: outside face + inside face -->
+          <div class="env-flap" aria-hidden="true">
+            <svg class="flap-out" viewBox="0 0 100 60" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="envFlap" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#fff6f2"/><stop offset="1" stop-color="#ffd9e4"/>
+                </linearGradient>
+              </defs>
+              <path d="M1.2 1.2 H98.8 L56 54 Q50 60 44 54Z" fill="url(#envFlap)" stroke="#2c4a36" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            </svg>
+            <svg class="flap-in" viewBox="0 0 100 60" preserveAspectRatio="none">
+              <path d="M1.2 1.2 H98.8 L56 54 Q50 60 44 54Z" fill="#f4a0b9" stroke="#2c4a36" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            </svg>
+          </div>
+
+          <!-- heart wax seal -->
+          <div class="env-seal" aria-hidden="true">
+            <svg viewBox="0 0 64 64">
+              <defs>
+                <radialGradient id="sealWax" cx=".35" cy=".3" r=".8">
+                  <stop offset="0" stop-color="#f58fb0"/><stop offset=".6" stop-color="#d9628a"/><stop offset="1" stop-color="#a83d63"/>
+                </radialGradient>
+              </defs>
+              <!-- wobbly wax blob -->
+              <path d="M32 4c6 0 8 4 13 5s9 5 10 10s5 8 4 13s-4 8-5 13s-6 8-11 9s-7 4-11 4s-7-3-12-4s-9-5-10-10s-5-8-4-13s4-9 6-13s6-8 11-9s5-5 9-5z" fill="url(#sealWax)"/>
+              <circle cx="32" cy="33" r="17" fill="none" stroke="#a83d63" stroke-width="2" stroke-opacity=".6"/>
+              <!-- pressed heart -->
+              <path d="M32 27c-2.6-5-10-4.6-10 1.6c0 5 5 7.6 10 11.6c5-4 10-6.6 10-11.6c0-6.2-7.4-6.6-10-1.6z" fill="#c24d76" stroke="#ffd0de" stroke-width="1.2" stroke-opacity=".7"/>
+            </svg>
           </div>
         </div>
         <p class="envelope-hint" id="envelopeHint">tap to open</p>
@@ -1152,7 +1828,7 @@
            or just drop a file named "her-photo.jpg" next to this HTML file. -->
       <div class="photo-frame fade-in">
         <div class="photo-placeholder" id="photoPlaceholder">
-          <span class="ph-icon">🌸</span>
+          <span class="ph-icon">💗</span>
           <span>her photo goes here</span>
         </div>
         <img id="herPhoto" alt="Her" style="display:none;" decoding="async">
@@ -1265,15 +1941,15 @@
               Sa oras na ma-receive mo to sana nasa CNX pa tayo both and medyo sanay na sa mga concerns ni member. Pero I think I'll give this to you right after nesting, not sure, medyo advance sa bday mo pero okay na yan. Uhm, good luck sa life I guess? Charot. Sana pumaldo na tayo and mahanap na natin kung para sa anong work ba talaga tau hyst.</p>
           <p>Konting chismis kasi sayang naman ng background music baka ambilis mo magbasa. TAGALAN MO PAGBABASA, NAKA LOOP YAN!<br>
               So, nung magkakasama na tayo sa training room tapos medyo nagkakakilala na, lalo na nung magkatabi na tayo, potek naaalala ko sayo si ate! Hahahah legit yan.<br>
-              Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo, tipong gugustuhin ko rin lahat ng favorites mo or at least malaman ko lang para may mapag usapan naman tayo kahit papano, ganun. Kasi naman pag kausap kita ambilis ko mawalan topic lalo pag in person kasi heheya aquOh..,, AS IN!! Garo ko bakla ang ayp. Pero I really really really want you to tell me about your day everyday, your favorite dish, color, things, movies, hobbies, aything, whatever at all. Disturb me please, tell me about it all. There's nothing I would love more.<br>
+              Kaya iniisip ko na parang madali lang tayo maging close. Mali ako. Gusto kita kilalanin lalo, tipong gugustuhin ko rin lahat ng favorites mo or at least malaman ko lang para may mapag usapan naman tayo kahit papano, ganun. Kasi naman pag kausap kita ambilis ko mawalan topic lalo pag in person kasi heheya aquOh..,, AS IN!! Garo ko bakla ang ayp. Pero I really really really want you to tell me about your day everyday, your favorite dish, color, things, movies, hobbies, aything, whatever at all. Disturb me please, tell me about it all. There's nothing I would love more. Soafer love your notifications!!<br>
               But baasically nganga ako in person, so bumabawi ako sa text (instagram, not fb kasi di mo ko nirereplyan lalo dun). Tipong kung anu-anong mga traumas and shits sa buhay ko kinukuwento ko, di ba??? Pati nga ex ko na parang tanga nikwento ko out of nowhere wtf. Ang cringe ko sa part na yon. Wala talaga ko ma-topic and desperate ako maging interested ka sa mga sinasabi ko HAHAHAH. Pero ako lang naging comfy sayo, never ka nag chika sa akin! Gusto ko rin naman pag kuwentuhan mo para kahit konti mafeel kong may tiwala ka sa akin. Pero okay na yun, ako na lang magbuhat ng convo and everything sanay naman ako jan hayst jk. Pero yo, I'm here. Anytime for you, cuh! Chat ka lang sa ig or kahit saan. Masipag ako mag reply... sa'yo.</p>
           <p>Hindi kita crush na gaya ng mga crush ko nung high school. HINDI TALAGA. Explain ko kung ano ka sa akin as easy as I can. I'm not good with words so bear with me. So basically, u gib me hapi. Tipong di ko pansin na naka smile na ko pag nakikita ka, lalo pag nakikita kang naka smile, pag naririnig ka, pag naaamoy ka, tangina napapa smile ako bigla. There's just something in your voice that's driving me crazy. Speak, laugh, do whatever sound, even just fucking swear idgaf, your voice is really making me breathless! If there's heaven on earth that would be beside you with your scent and lovely voice hihi. Parang gusto ko bugbugin lahat ng bumabadtrip sayo tas mga nang aaway and everything. Gusto ko protektahan lang yang smile mo and magstay ka lang na ganiyan. Makita ko lang na naka smile ka, or marinig na tumatawa ka nung trademark mo na tawa na may singhot at pusngak, sa loob loob ko ang saya ko na rin. Kahit di ako kasali pag nag uusap tas naglalaro kayo, nagtataklob na lang ako ng jacket or pumapasok sa t-shirt ko para di makita na naka smile na rin ako HAHAHAH. Di ko alam, kaka yii nila siguro nadala din ako? Pero hindi e, eventually mapapansin ko rin namang natutuwa ako sayo e. Nakakatuwa ka kasi hawig mo posa namen jk. Ang hirap kasi eh mas malaki ka sakin pero nakukyutan akong masyado sayo, legit. Di ko nga kaya kahit magjoke lang na hindi ka cute eh, ang herap hahahah. Iba epekto ng cuteness mo sa akin beh, parang binabalik niya ko sa pagka-bata na walang inatupag kundi magpakasaya lang tas walang problema ganun. Dun pa lang alam ko nang dapat ikeep and angkinin na kita HAHAHAH kaso shet cnu b nmn aquOhh.,?? Konting seriously mode lang, alam kong di ko ikaw deserve, aww. Masyado akong makasalanan and masyadong demonyo para sayo, lam ko yan. Di ko deserve mafeel yung happiness and excitement na nafefeel ko sayo. Kaya wala rin naman akong inaasahan, AWWW. Matagal ko nang napagtanto na solo akong tatanda (char samahan mo ako). Pero, damn. I really love thinking, no, imagining, all the things that we could be. The places that we would go to, the things that we would do, the house that we're gonna have, how happy we would be. Pero I know that it's going to be super selfish. Kasi ako lang yung magiging masaya (siguro). Kaya matagal ko na rin inekisan plano kong kidnappin ka na lang hehe.  Kung yung mga crush ko before napapa smile ako, kilig, and all, ikaw naman you make me feel contented and happy with myself. Ganiyan. ~ I like me better when I'm with you, kanta yarn. Parang ayoko nang may makilala pa na iba, ayoko nang magka crush. Ganun! Gusto kitang i-baby lagi kahit mas malaki ka sakin. Hirap talaga iexplain (this is just my mind speaking btw, not doing any edits or sum' shit bruh). In a way you make me feel complete(?) So corny pero ganun e. Parang gusto kita piliin lagi, ganun! Yun talaga! Me wants you, but me is not deserve u. ~ But if you give me half a chance I'll show... kanta ulit yarn. Pero bigyan mo lang talaga, charot! Hahahah. I'm just so happy having these feelings that you give me, not even thinking that you will someday somehow reciprocate them. Just admiring you from afar brings me a lot of joy in itself and again it'll be too selfish of me to even wish for you to feel the same. This is a beautiful thing, this feeling I have for you (plural dapat talaga kasi marami kang pinapafeel), how beautiful it is to admire somebody or even love them without the assurance that they feel the same way about you too. Kunwari na lang happy ako kahit di ako umaasang may chance ako sayo hahahah. But please don't make my feelings go away. Please don't make me go away. Iyak talaga ko neto. Dami kong sinasabi noh? My way of showing you that I'll be the over-explaining to your overthinking.</p>
           <p>Sana di naman creepy huhu. Or sana dae man kadiri! Hayop. Super trying hard akong di maging cringe as in. Pero la eh. Ibang tama ata to, Ali. Pero di kita crush ha, gusto lang kita ipakilala kay mama. Tas iuwi na kita. Ganun HAHAHAH. Pwede ka ba? Kailangan namin helper maglaba, may washing machine naman kami. Fb fb ka lang habang naghihintay matapos. Charot bat naman kita papagurin. Iuuwi kita para pagsilbihan. HUY!! HAHAHAH.<br>
               Wala na corny na masyado. Sensya na sinusulit ko lang, mamamatay muna ko bago ko masabi mga yan in person ih. You just got me smiling on my phone too damn much! You literally made every other girl human being uninteresting. Sucks because I know this shit's gonna hurt lol but at the same time I am loving the way you make me feel HAHA.</p>
           <p>Pero tampo ako sayo hmp. Di mo nireplyan mga reels ko September 9, 2026! Bago mag bday si JC! Pero okay lang naman busy naman ako gumawa nito so walang time for reels. TAPOS TAMPO AKO ULIT INIGNORE MO NA NAMAN AKO HAHAHAHAH September 15, 2026! Di ako nireplyan kasi may sakit daw tapos ang sigla sigla tas ingay sa prod ang hayup??? WOW!! Hahahahah well, mention ko lang para alam mo kung gano ako nagyyearn sayo :3</p>
           <p>Singit ko lang dito. Inis na inis ako sayo last September 17 kasi wala, narealize ko kuhang kuha mo ko HAHAHAH asarr! I like you so much it hurts! Not even hoping na may mapala ako pero I'm just so happy to like u bruh. Sana di masayang charizz. Wag mo ko itaboy dun sa nasa kabilang bay huhuhu. Ikaw talaga us2 q endeh eon huhu.</p>
-          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. DI NGA KITA CRUSH, DAPAT BILHAN NA KITA SINGSING. GANUN! HAHAHAHAHA. Charot ang aggressive grabe. Sabi ko walang edit edit to, wala talaga. Nagdadagdag lang ako kapag may naiisip ako sabihin. So eto, I like you. I was just afraid to admit that to myself kasi baka ireject mo ko or ifriendzone. But fuck that shit bro. I don't care at this point. I need you to know I like you. You're special (child) to me. I wanna make myself better for you. You deserve the best, so I will become the best. WOAH! HAHAHAH. Sana wala kang kalandian (I can treat you better), sana di mo na namimiss yung nang ghost sayo (di natin siya bati), sana ako na lang gawin mong crush mo (kasi oo na nga crush nga kita), and please don't be in love with someone else (Taylor Sheesh). Pero ikaw, alangan naman pilitin kita di ba? (AKO NA LANG KASI char). Once again, I really like you Allysa. All love songs I hear suddenly became about you. I really want to know you more. I care about you, big time. It's such a shame that I'm an insecure lil' bitch who does not have the courage to tell you all of this in person, tsaka baka macreepyhan ka, so valid yan! Hehe. Butttt, you don't have to feel the same. My feelings for you will not be lessen for it. I just want you to know that there's someone out there (me) that cares about you deeply. Liking me back does not really matter, I like you, a loooot. Now you know it, that's what matters. Ps. I'll take care of you just like Tyrese did with Judith (from one of my favorite series and I really wish that I'll be with you when u start watching it ahihihi). I will not be wasting both our times I guarantee you that.</p>
-          <p class="space-before">I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.<br>
+          <p>Dami ko pang gusto sabihin kaso baka isipin mo crush kita... di naman eh. Konti lang. DI NGA KITA CRUSH, DAPAT BILHAN NA KITA SINGSING. GANUN! HAHAHAHAHA. Charot ang aggressive grabe. Sabi ko walang edit edit to, wala talaga. Nagdadagdag lang ako kapag may naiisip ako sabihin. So eto, I like you. I was just afraid to admit that to myself kasi baka ireject mo ko or ifriendzone. But fuck that shit bro. I don't care at this point. I need you to know I like you. You're special (child) to me. I wanna make myself better for you. You deserve the best, so I will become the best. WOAH! HAHAHAH. Sana wala kang kalandian (I can treat you better), sana di mo na namimiss yung nang ghost sayo (di natin siya bati), sana ako na lang gawin mong crush mo (kasi oo na nga crush nga kita), and please don't be in love with someone else (Taylor Sheesh). Pero ikaw, alangan naman pilitin kita di ba? (AKO NA LANG KASI char). Once again, I really like you Allysa. All love songs I hear suddenly became about you. I really want to know you more. I care about you, big time. It's such a shame that I'm an insecure lil' bitch who does not have the courage to tell you all of this in person, tsaka baka macreepyhan ka, so valid yan! Hehe. Butttt, you don't have to feel the same. My feelings for you will not be lessen for it. I just want you to know that there's someone out there (me) that cares about you deeply. Liking me back does not really matter, I like you, a loooot. Now you know it, that's what matters. Ps. I'll take care of you just like Tyrese did with Judith (from one of my favorite series and I really wish that I'll be with you when u start watching it ahihihi). I will not be wasting both our times I guarantee you that. Ayaw ko na umalis sa cnx dahil sayo. And kung okay lang, sa locker mo na lang din ako makikilagay ng gamit ko habambuhay HAHAHAH.</p>
+          <p>I appreciate you listening to my bullsh*#%ts in life. Whatever happens, sana dehins tayo maging others sa isa't isa.<br>
               I hope it made you smile even a bit. Thank you for always reacting to all of my reels, yo! (Marami pa kong naka store na reels di ko masend sayo kasi medyo may hiya pa)<br>
               That's all for today. Please remember that you can always give me a call/text back if you have any other more concerns. You can also send me your feedback about the service I had provided you today through Instagram or Facebook, 5 hearts being the highest (YES!!!) and 1 being the lowest (no). The website would be the link you used to open this letter. Thank you for letting me assist you today, please give me some of your time in exchange for all of mine. My name is Adi, hoping to see you soon.</p>
         </div>
@@ -1303,8 +1979,20 @@
     <div class="bg-glow accent-goodbye"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="particles-layer" id="particlesGoodbye"></div>
     <div class="screen-content">
-      <div class="goodbye-frame fade-in">
-        <img src="ali_cat.jpeg" alt="Allysa and her cat" loading="lazy" decoding="async">
+      <div class="goodbye-glow fade-in">
+        <div class="goodbye-frame">
+          <img src="ali_cat.jpeg" alt="Allysa and her cat" loading="lazy" decoding="async">
+        </div>
+        <span class="gb-sparkle gold" style="left:-6%;top:8%;font-size:2.40rem;animation-delay:0s">✦</span>
+        <span class="gb-sparkle " style="left:92%;top:-4%;font-size:1.76rem;animation-delay:.5s">✦</span>
+        <span class="gb-sparkle pink" style="left:100%;top:40%;font-size:2.24rem;animation-delay:1.1s">✦</span>
+        <span class="gb-sparkle gold" style="left:88%;top:92%;font-size:1.92rem;animation-delay:1.6s">✦</span>
+        <span class="gb-sparkle pink" style="left:40%;top:-10%;font-size:1.60rem;animation-delay:.9s">✦</span>
+        <span class="gb-sparkle " style="left:-10%;top:62%;font-size:1.92rem;animation-delay:1.9s">✦</span>
+        <span class="gb-sparkle pink" style="left:10%;top:100%;font-size:2.08rem;animation-delay:.3s">✦</span>
+        <span class="gb-sparkle gold" style="left:55%;top:104%;font-size:1.60rem;animation-delay:1.3s">✦</span>
+        <span class="gb-sparkle pink" style="left:-4%;top:30%;font-size:1.44rem;animation-delay:2.1s">✦</span>
+        <span class="gb-sparkle " style="left:104%;top:72%;font-size:1.52rem;animation-delay:.7s">✦</span>
       </div>
       <h1 class="goodbye-title fade-in delay-1">Happy birthday!<br>Text me!</h1>
       <button class="btn-yes fade-in delay-2" id="btnGoodbyeClose" type="button">Sure thing!</button>
@@ -1374,6 +2062,100 @@
    HER NAME — edit this once, it fills in everywhere it's used
    ===================================================================== */
 const HER_NAME = "Allysa";
+
+/* =====================================================================
+   FLORAL CIRCULAR WIPE INTRO — runs immediately on page open.
+   1) the cover shows and the center flower blooms (pure CSS),
+   2) after HOLD ms (or a tap) the cover gets a growing circular hole,
+      with a ring of spinning flowers riding the hole's edge,
+   3) when the hole covers the whole screen the overlay is removed.
+   The loading screen keeps loading underneath the whole time.
+   ===================================================================== */
+(function runFloralIntro(){
+  const intro = document.getElementById('floralIntro');
+  if (!intro) return;
+  const cover = document.getElementById('fiCover');
+  const ring = document.getElementById('fiRing');
+  const spin = document.getElementById('fiRingSpin');
+  document.getElementById('fiName').textContent = HER_NAME;
+  document.documentElement.classList.add('intro-lock');
+
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const HOLD = reduceMotion ? 900 : 2300;  // how long the bloom shows before the wipe
+  const WIPE = 1500;                       // wipe duration (ms)
+
+  // build the ring: alternating pink flowers and green leaves around a circle
+  const colors = ['#f08bab', '#5bb877', '#ffc2d4', '#d9628a', '#9bd8a8', '#f7a6bf'];
+  const COUNT = 16;
+  let html = '';
+  for (let i = 0; i < COUNT; i++){
+    const a = (i / COUNT) * Math.PI * 2;
+    const left = 50 + 50 * Math.cos(a);
+    const top = 50 + 50 * Math.sin(a);
+    const isLeaf = i % 4 === 3;
+    html += '<span class="fi-ring-flower" style="left:' + left + '%;top:' + top + '%;color:' + colors[i % colors.length] + '">' +
+            '<svg viewBox="0 0 100 100"><use href="#' + (isLeaf ? 'fl-leaf' : 'fl-bloom') + '" width="100" height="100"/></svg></span>';
+  }
+  spin.innerHTML = html;
+
+  let started = false;
+  function setHole(r){
+    const m = 'radial-gradient(circle at 50% 50%, transparent ' + r + 'px, #000 ' + (r + 1.5) + 'px)';
+    cover.style.webkitMaskImage = m;
+    cover.style.maskImage = m;
+  }
+  function finish(){
+    intro.classList.add('done');
+    document.documentElement.classList.remove('intro-lock');
+    setTimeout(() => intro.remove(), reduceMotion ? 550 : 50);
+  }
+  function startWipe(){
+    if (started) return;
+    started = true;
+    if (reduceMotion){ finish(); return; } // just a gentle fade (see CSS)
+    intro.classList.add('wiping');
+    const maxR = Math.hypot(window.innerWidth, window.innerHeight) / 2 + 70;
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+    let t0 = null;
+    function frame(now){
+      if (t0 === null) t0 = now;
+      const p = Math.min(1, (now - t0) / WIPE);
+      const e = ease(p);
+      const r = e * maxR;
+      setHole(r);
+      ring.style.width = ring.style.height = (r * 2) + 'px';
+      ring.style.setProperty('--grow', e.toFixed(3));
+      ring.style.opacity = p < .1 ? p / .1 : (p > .82 ? Math.max(0, (1 - p) / .18) : 1);
+      if (p < 1) requestAnimationFrame(frame); else finish();
+    }
+    requestAnimationFrame(frame);
+  }
+  setTimeout(startWipe, HOLD);
+  intro.addEventListener('click', startWipe);
+})();
+
+/* =====================================================================
+   FALLING PETALS — a light, always-on drift of pink petals and mint
+   leaves (see .petal-layer in CSS).
+   ===================================================================== */
+(function createPetals(){
+  const layer = document.getElementById('petalLayer');
+  if (!layer) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const count = window.innerWidth < 640 ? 11 : 18;
+  for (let i = 0; i < count; i++){
+    const p = document.createElement('span');
+    p.className = 'petal' + (i % 3 === 2 ? ' leaf' : '');
+    const size = 9 + Math.random() * 9;
+    p.style.width = size + 'px';
+    p.style.height = (size * .82) + 'px';
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+    p.style.animationDuration = (9 + Math.random() * 8) + 's';
+    p.style.animationDelay = (-Math.random() * 14) + 's'; // negative delay = already mid-fall on first paint
+    layer.appendChild(p);
+  }
+})();
 
 /* =====================================================================
    HER PHOTO — (a) SWAP IN REAL PHOTO HERE.
@@ -1856,6 +2638,93 @@ function showScreen(id){
   updateScrollHint();
   // the letter's gentle trickle of hearts only plays while she's actually on it
   if (id === 'screen-final') startLetterAmbientHearts(); else stopLetterAmbientHearts();
+  // roses pour down when the envelope screen appears
+  if (id === 'screen-envelope') startRoseShower(); else { stopRoseShower(); clearRoseShower(); }
+  if (id === 'screen-final') setupLetterReveal();
+}
+
+/* ---------- letter: paragraphs drift in as she scrolls ---------- */
+let letterRevealDone = false;
+function setupLetterReveal(){
+  if (letterRevealDone || !('IntersectionObserver' in window)) return;
+  letterRevealDone = true;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
+  document.querySelectorAll('.final-letter .final-message p').forEach(p => { p.classList.add('reveal'); io.observe(p); });
+}
+
+/* ---------- ROSE SHOWER ----------
+   startRoseShower(): a big burst of tumbling roses, then a light, steady
+   trickle until the envelope is opened (or the screen changes).
+   Tweak ROSE_BURST / ROSE_TRICKLE_MS to make it heavier or lighter. */
+const ROSE_BURST = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 15 : (window.innerWidth < 600 ? 55 : 75);
+const ROSE_TRICKLE_MS = 380;
+const roseLayer = document.getElementById('roseLayer');
+let roseTrickleTimer = null;
+
+function rnd(min, max){ return min + Math.random() * (max - min); }
+
+/* the bouquet: [symbol id, min px, max px, how often it shows up]
+   rose = love, sunflower = adoration + loyalty, pink tulip = caring + perfect
+   love, daisy = pure, loyal love, forget-me-not = true love that lasts */
+const FLOWER_MIX = [
+  ['rose-front',     26, 60, 26],
+  ['fl-sunflower',   30, 62, 16],
+  ['fl-tulip',       36, 64, 18],
+  ['fl-daisy',       24, 50, 16],
+  ['fl-forgetmenot', 34, 56, 12],
+  ['rose-petal',     12, 22,  6],
+  ['pink-petal',     12, 22,  6],
+];
+const FLOWER_TOTAL = FLOWER_MIX.reduce((t, f) => t + f[3], 0);
+function pickFlower(){
+  let n = Math.random() * FLOWER_TOTAL;
+  for (const f of FLOWER_MIX){ if ((n -= f[3]) < 0) return f; }
+  return FLOWER_MIX[0];
+}
+
+function spawnRose(isBurst){
+  const [kind, minS, maxS] = pickFlower();
+  const size = rnd(minS, maxS);
+  const fall = document.createElement('div');
+  fall.className = 'rose-fall';
+  fall.style.cssText =
+    `left:${rnd(-4, 100)}vw;width:${size}px;height:${size}px;` +
+    `--dur:${isBurst ? rnd(4.5, 7.5) : rnd(7, 11)}s;` +
+    `--delay:${isBurst ? rnd(0, 2.2) : 0}s;` +
+    `--drift:${rnd(-12, 12)}vw;`;
+  const tumble = document.createElement('div');
+  tumble.className = 'rose-tumble';
+  tumble.style.cssText =
+    `--spin:${rnd(1.6, 3.4)}s;` +
+    `--rx0:${rnd(-60, 60)}deg;--rx1:${rnd(-70, 70)}deg;` +
+    `--ry0:${rnd(-60, 60)}deg;--ry1:${rnd(-70, 70)}deg;` +
+    `--rz0:${rnd(0, 360)}deg;--rz1:${rnd(-180, 540)}deg;`;
+  tumble.innerHTML = `<svg viewBox="0 0 100 100"><use href="#${kind}"/></svg>`;
+  fall.appendChild(tumble);
+  fall.addEventListener('animationend', (e) => { if (e.target === fall) fall.remove(); });
+  roseLayer.appendChild(fall);
+}
+
+function startRoseShower(){
+  stopRoseShower();
+  for (let i = 0; i < ROSE_BURST; i++) spawnRose(true);
+  roseTrickleTimer = setInterval(() => {
+    if (document.getElementById('envelope').classList.contains('opened')) return stopRoseShower();
+    spawnRose(false);
+  }, ROSE_TRICKLE_MS);
+}
+// stops new roses; the ones already falling finish their fall naturally
+function stopRoseShower(){
+  if (roseTrickleTimer){ clearInterval(roseTrickleTimer); roseTrickleTimer = null; }
+}
+// leaving the envelope screen: gently fade away whatever is still falling
+function clearRoseShower(){
+  if (!roseLayer.firstChild) return;
+  roseLayer.style.transition = 'opacity .8s ease';
+  roseLayer.style.opacity = '0';
+  setTimeout(() => { roseLayer.innerHTML = ''; roseLayer.style.opacity = '1'; }, 850);
 }
 
 /* The final letter is the one screen tall enough to need scrolling on a
@@ -1864,55 +2733,116 @@ function showScreen(id){
 function updateScrollHint(){
   const hint = document.getElementById('scrollHint');
   const finalActive = document.getElementById('screen-final').classList.contains('active');
+  // letter reading progress bar (top of screen)
+  const bar = document.getElementById('readProgress');
+  if (finalActive){
+    const max = document.body.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? Math.min(100, window.scrollY / max * 100) : 100) + '%';
+    bar.classList.add('show');
+  } else bar.classList.remove('show');
   if (!finalActive){ hint.classList.remove('show'); return; }
   const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 24);
   hint.classList.toggle('show', !nearBottom);
 }
-window.addEventListener('scroll', updateScrollHint);
+window.addEventListener('scroll', updateScrollHint, { passive:true });
 window.addEventListener('resize', updateScrollHint);
 
+/* ---------- tap effect: ring + heart/sparkle burst wherever she touches ---------- */
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const glyphs = ['♥', '✦', '♥', '✧', '♥'];
+  const colors = ['#f08bab', '#ffd23f', '#5bb877', '#ff9fbd', '#d9628a'];
+  document.addEventListener('pointerdown', (e) => {
+    const fx = document.createElement('div');
+    fx.className = 'tap-fx';
+    fx.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+    let html = '<span class="tap-ring"></span>';
+    if (!reduce){
+      const n = 6;
+      for (let i = 0; i < n; i++){
+        const ang = (Math.PI * 2 * i / n) + Math.random() * .6;
+        const dist = 26 + Math.random() * 22;
+        html += `<span class="tap-dot" style="--dx:${(Math.cos(ang) * dist).toFixed(1)}px;--dy:${(Math.sin(ang) * dist).toFixed(1)}px;` +
+                `--rot:${Math.round(Math.random() * 90 - 45)}deg;--fs:${(10 + Math.random() * 8).toFixed(0)}px;` +
+                `--c:${colors[i % colors.length]}">${glyphs[i % glyphs.length]}</span>`;
+      }
+    }
+    fx.innerHTML = html;
+    document.body.appendChild(fx);
+    setTimeout(() => fx.remove(), 800);
+  }, { passive: true });
+})();
+
+/* ---------- phone haptics ---------- */
+document.addEventListener('click', (e) => {
+  if (e.target.closest('button, #envelopeWrap') && navigator.vibrate) { try { navigator.vibrate(12); } catch(_){} }
+}, { passive:true });
+
 /* ---------- Screen 1: envelope ---------- */
-/* frame-by-frame: env1 (sealed) -> env2 (ribbon loosening) -> env3 (open,
-   paper out), then the "next page" button fades in over env3's paper.
-   Two stacked <img> layers crossfade for each frame change: the back layer
-   gets the new src *before* anything animates, then the two swap which one
-   is "front" so the old frame fades out while the new one fades in at the
-   same time — a real dissolve, not fade-to-blank-then-swap. */
+/* tap -> add .opened; the CSS handles the whole sequence (seal pops,
+   flap swings open, letter rises), then the "Open letter" button fades in
+   once the letter has finished sliding up. */
 const envelopeFrames = document.getElementById('envelope');
-const envelopeLayers = [document.getElementById('envelopeImgA'), document.getElementById('envelopeImgB')];
 const envelopeHint = document.getElementById('envelopeHint');
 const btnEnvelopeNext = document.getElementById('btnEnvelopeNext');
 const btnEnvelopeNextPos = document.getElementById('btnEnvelopeNextPos');
-let envelopeFrontLayer = 0;
-
-function setEnvelopeFrame(src){
-  const back = envelopeLayers[1 - envelopeFrontLayer];
-  const front = envelopeLayers[envelopeFrontLayer];
-  back.src = src;
-  front.classList.remove('front');
-  back.classList.add('front');
-  envelopeFrontLayer = 1 - envelopeFrontLayer;
-}
 
 document.getElementById('envelopeWrap').addEventListener('click', () => {
   if (envelopeFrames.classList.contains('opened')) return;
   envelopeFrames.classList.add('opened');
+  envelopeFrames.setAttribute('aria-label', 'an opened envelope with a letter inside');
   playOpenLetterSound();
   envelopeHint.style.opacity = 0;
-  setEnvelopeFrame('env2.svg');
-  setTimeout(() => setEnvelopeFrame('env3.svg'), 650);
   setTimeout(() => {
     btnEnvelopeNextPos.hidden = false;
     requestAnimationFrame(() => btnEnvelopeNextPos.classList.add('show'));
-  }, 1300);
+  }, 1650);
 });
 
 btnEnvelopeNext.addEventListener('click', (e) => {
   e.stopPropagation();
+  if (btnEnvelopeNext.dataset.busy) return;     // ignore double taps mid-transition
+  btnEnvelopeNext.dataset.busy = '1';
   playClickSound();
-  showScreen('screen-greeting');
-  createParticles(document.getElementById('particlesGreeting'));
+  openLetterTransition(() => {
+    showScreen('screen-greeting');
+    createParticles(document.getElementById('particlesGreeting'));
+  });
 });
+
+/* letter lifts out, unfolds to full screen, then dissolves into the next page */
+function openLetterTransition(onMiddle){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const letter = document.querySelector('.env-letter');
+  if (reduce || !letter || !Element.prototype.animate){ onMiddle(); return; }
+  const r = letter.getBoundingClientRect();
+  const zoom = document.createElement('div');
+  zoom.className = 'letter-zoom';
+  zoom.innerHTML = '<span>Allysa</span>';
+  Object.assign(zoom.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+  document.body.appendChild(zoom);
+  document.getElementById('screen-envelope').classList.add('leaving');
+  stopRoseShower(); clearRoseShower();
+  const W = window.innerWidth, H = window.innerHeight;
+  // 1) lift + a little tilt, 2) unfold to the full screen
+  const grow = zoom.animate([
+    { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', borderRadius: '8px', transform: 'rotate(0deg)' },
+    { left: r.left + 'px', top: (r.top - 24) + 'px', width: r.width + 'px', height: r.height + 'px', borderRadius: '8px', transform: 'rotate(-3deg)', offset: .25 },
+    { left: '0px', top: '0px', width: W + 'px', height: H + 'px', borderRadius: '0px', transform: 'rotate(0deg)' }
+  ], { duration: 1000, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards' });
+  grow.onfinish = () => {
+    zoom.querySelector('span').style.opacity = 0;
+    onMiddle();                                  // next page is now underneath
+    document.getElementById('screen-envelope').classList.remove('leaving');
+    // 3) the paper glows, then dissolves into the dark hello screen
+    const fade = zoom.animate([
+      { opacity: 1, filter: 'blur(0px) brightness(1)' },
+      { opacity: .9, filter: 'blur(2px) brightness(1.08)', offset: .3 },
+      { opacity: 0, filter: 'blur(14px) brightness(1.15)' }
+    ], { duration: 900, easing: 'ease-out', fill: 'forwards' });
+    fade.onfinish = () => zoom.remove();
+  };
+}
 
 /* ---------- Her name + photo fill-in ---------- */
 document.getElementById('herNameGreeting').textContent = HER_NAME;
@@ -2316,7 +3246,7 @@ document.getElementById('btnGoodbyeClose').addEventListener('click', () => {
    ===================================================================== */
 function createParticles(container, count = 16){
   container.innerHTML = '';
-  const symbols = ['💚', '🤍', '💛'];
+  const symbols = ['💚', '💗', '✨', '🤍'];
   for (let i = 0; i < count; i++){
     const p = document.createElement('span');
     p.className = 'particle';
@@ -2339,7 +3269,7 @@ let letterHeartsTimer = null;
 function startLetterAmbientHearts(){
   stopLetterAmbientHearts();
   const container = document.getElementById('particlesFinal');
-  const symbols = ['💚', '🤍', '✨'];
+  const symbols = ['💚', '💗', '💖', '✨'];
   letterHeartsTimer = setInterval(() => {
     const p = document.createElement('span');
     p.className = 'particle';
@@ -2364,7 +3294,7 @@ function stopLetterAmbientHearts(){
 function launchConfetti(count = 42){
   const layer = document.getElementById('reactionLayer');
   layer.innerHTML = '';
-  const colors = ['var(--gold)', 'var(--pink-strong)', 'var(--sage-mid)', 'var(--sage-dark)', 'var(--blush)', 'var(--cream)'];
+  const colors = ['var(--pink-strong)', 'var(--cherry-blossom)', 'var(--rose)', 'var(--sage)', 'var(--sage-mid)', 'var(--white)'];
   for (let i = 0; i < count; i++){
     const piece = document.createElement('span');
     piece.className = 'confetti-piece';
@@ -2419,7 +3349,7 @@ function createSparkles(container, count){
   // without cluttering a small screen or taxing a lower-end device.
   if (count === undefined) count = window.innerWidth < 640 ? 18 : 30;
   const glyphs = ['✦', '✧', '⋆', '♥']; // a heart mixed into the star twinkle, for a little more romance
-  const colors = ['gold', 'pink', 'white'];
+  const colors = ['mint', 'pink', 'white'];
   for (let i = 0; i < count; i++){
     const s = document.createElement('span');
     s.className = 'sparkle ' + colors[Math.floor(Math.random() * colors.length)];
@@ -2580,7 +3510,6 @@ renderFinalPhotoStack();
 // below. clap.mp3/wrong.mp3 aren't <audio> tags (see SOUND EFFECTS comment
 // above) so they're preloaded separately via SFX_FILES, also in runLoadingScreen().
 const LOADING_IMAGES = [
-  'env1.svg', 'env2.svg', 'env3.svg',
   HER_PHOTO_SRC, 'ali3.jpg',
   'group1.jpeg', 'ali2.jpg', 'ali4.jpg', 'ali5.png', 'ali6.png', 'alii_young.png',
   'reyal.jpeg', 'caloy.jpeg', 'chris.jpeg', 'mar.jpeg',
