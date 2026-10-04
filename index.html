@@ -1523,20 +1523,34 @@
   .question-image[data-orient="landscape"]{ width: min(360px, 88vw); height:auto; max-height:none; }
   .question-image[data-orient="square"]{ width: min(290px, 74vw); height:auto; }
 
-  /* --- equation question: three photos side by side, "equals???" below --- */
-  .equation-row{
-    flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:center;
-    gap: .35rem .3rem; width:100%;
-  }
+  /* --- equation question: photos stacked one under another (scroll down),
+         styled like tilted keepsake photos with a "+" badge between --- */
+  .equation-row{ flex-direction:column; flex-wrap:nowrap; align-items:center; gap:0; width:100%; }
   .equation-row img{
-    width: calc((min(100vw, 480px) - 2.5rem - 5.2rem) / 3);
-    max-width: 130px;
-    aspect-ratio: 3/4; object-fit:cover; object-position: 50% 25%;
-    border-radius: 12px; border-width:2px;
-    box-shadow: 3px 3px 0 var(--ink);
+    width: min(250px, 66vw);
+    aspect-ratio: 4/5; object-fit:cover; object-position: 50% 25%;
+    border: 6px solid #fff; border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(120,60,80,.18), 0 2px 5px rgba(120,60,80,.12);
+    background:#fff;
   }
-  .equation-row .equation-sign:not(.equation-equals){ font-size: clamp(1.3rem, 5.5vw, 1.8rem); width:1.1rem; justify-content:center; display:flex; }
-  .equation-row .equation-equals{ flex-basis:100%; text-align:center; margin-top:.35rem; }
+  .equation-row img:nth-of-type(odd){ transform: rotate(-2.5deg); }
+  .equation-row img:nth-of-type(even){ transform: rotate(2.5deg); }
+  .equation-row .equation-sign:not(.equation-equals){
+    position:relative; z-index:2;
+    width:46px; height:46px; margin: -14px 0; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff; color: var(--rose);
+    font-family:'Quicksand', sans-serif; font-weight:700; font-size:1.7rem; line-height:1;
+    text-shadow:none;
+    box-shadow: 0 4px 12px rgba(190,90,125,.25);
+  }
+  .equation-row .equation-equals{
+    margin-top: 1.1rem;
+    font-family:'Quicksand', sans-serif; font-weight:700;
+    font-size: clamp(1.6rem, 7vw, 2.1rem); letter-spacing:.04em;
+    color: var(--rose);
+    text-shadow: 0 0 12px rgba(255,255,255,.95), 0 2px 0 #fff;
+  }
 
   /* --- picture choices: equal cards; a photo that's very tall or very wide
          is shown whole over a soft blurred copy of itself instead of being
@@ -1559,6 +1573,19 @@
     object-fit: cover; object-position: 50% 30%;
   }
   .choice-img-box.fit-whole img{ object-fit: contain; }
+
+  /* wide (landscape) choice cards, stacked top and bottom */
+  .choices.choices-landscape{ flex-direction:column; flex-wrap:nowrap; align-items:center; gap:.9rem; }
+  .choices-landscape .choice-picture-btn{ width: min(330px, 84vw); max-width:none; }
+  .choices-landscape .choice-img-box{ aspect-ratio: 16/9; }
+  /* a photo turned sideways to lie wide (e.g. the ampalaya) */
+  .choice-img-box.rot90{ container-type: size; }
+  .choice-img-box.rot90 img{
+    position:absolute; left:50%; top:50%;
+    width:100cqh; height:100cqw;
+    transform: translate(-50%,-50%) rotate(90deg);
+    object-fit: cover; object-position: center;
+  }
 
   /* --- surprise reveal photo in the popup: natural shape --- */
   .modal-reveal-image{
@@ -1610,6 +1637,105 @@
     .question-image[data-orient="portrait"], .ribbon-photo[data-orient="portrait"]{ height: 40vh; }
     .quiz-icon-image{ height: 32vh; }
   }
+
+  /* =====================================================================
+     ELEGANT BUTTONS — one soft, consistent style for every button.
+     Replaces the chunky dark outlines + hard offset shadows with:
+       - muted, natural sage-green and dusty-rose fills (white text still
+         passes contrast), a thin light edge and a soft glow-shadow
+       - the rounded, friendly Quicksand font instead of the pixel font
+       - a gentle lift on hover and a soft press on tap
+     ===================================================================== */
+  :root{
+    --btn-sage-1:#7dbb92; --btn-sage-2:#4f8f66;     /* natural leaf green */
+    --btn-rose-1:#eba2b8; --btn-rose-2:#c9668a;     /* dusty rose */
+    --btn-shadow-sage: 0 6px 16px rgba(63,120,86,.28), 0 1px 3px rgba(63,120,86,.25);
+    --btn-shadow-rose: 0 6px 16px rgba(190,90,125,.28), 0 1px 3px rgba(190,90,125,.25);
+  }
+  .btn-primary, .choice-btn, .btn-yes, .loading-start-btn{
+    font-family:'Quicksand', sans-serif; font-weight:700;
+    letter-spacing:.02em;
+    color:#fff;
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius:999px;
+    text-shadow: 0 1px 1px rgba(0,0,0,.12);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary, .choice-btn{
+    background: linear-gradient(180deg, var(--btn-sage-1), var(--btn-sage-2));
+    box-shadow: var(--btn-shadow-sage), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn-primary{ padding: .85rem 2rem; font-size: 1rem; }
+  .choice-btn:nth-child(2), .btn-yes, .loading-start-btn{
+    background: linear-gradient(180deg, var(--btn-rose-1), var(--btn-rose-2));
+    box-shadow: var(--btn-shadow-rose), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn-primary:hover, .choice-btn:hover, .btn-yes:hover, .loading-start-btn.show:hover{
+    transform: translateY(-2px);
+    filter: brightness(1.04);
+  }
+  .btn-primary:hover, .choice-btn:hover{ box-shadow: 0 10px 22px rgba(63,120,86,.32), inset 0 1px 0 rgba(255,255,255,.35); }
+  .choice-btn:nth-child(2):hover, .btn-yes:hover, .loading-start-btn.show:hover{ box-shadow: 0 10px 22px rgba(190,90,125,.32), inset 0 1px 0 rgba(255,255,255,.35); }
+  .btn-primary:active, .choice-btn:active, .btn-yes:active, .loading-start-btn.show:active{
+    transform: translateY(1px) scale(.97);
+    filter: brightness(.97);
+    box-shadow: 0 2px 6px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .btn-primary:focus-visible, .choice-btn:focus-visible, .btn-yes:focus-visible,
+  .loading-start-btn:focus-visible, .choice-picture-btn:focus-visible, .sound-toggle:focus-visible{
+    outline: 3px solid rgba(240,139,171,.55); outline-offset: 3px;
+  }
+
+  /* picture choice cards: soft white card, no dark outline */
+  .choice-picture-btn{
+    background:#fff;
+    border: 1px solid rgba(201,140,160,.35);
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(120,60,80,.14), 0 1px 3px rgba(120,60,80,.1);
+  }
+  .choice-picture-btn:hover{ transform: translateY(-3px); box-shadow: 0 12px 26px rgba(120,60,80,.18); }
+  .choice-picture-btn:active{ transform: scale(.97); box-shadow: 0 3px 8px rgba(120,60,80,.15); }
+  .choice-img-box{ border: none; border-radius: 12px; }
+  .choice-picture-btn .choice-label{ font-family:'Quicksand', sans-serif; color:#5b4049; font-size:.95rem; }
+
+  /* sound button: a frosted little circle */
+  .sound-toggle{
+    background: rgba(255,255,255,.8);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    border: 1px solid rgba(201,140,160,.4);
+    box-shadow: 0 4px 12px rgba(120,60,80,.15);
+    width:44px; height:44px; font-size:1.1rem;
+  }
+  .sound-toggle:active{ transform: scale(.94); box-shadow: 0 2px 6px rgba(120,60,80,.15); }
+
+  /* "keep scrolling": a small frosted arrow in the corner instead of a big
+     chip in the middle of the letter text */
+  .scroll-hint{
+    left:auto; right: calc(14px + env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom));
+    transform:none;
+    width:40px; height:40px; padding:0; justify-content:center;
+    font-size:0; color:#7a3a55;
+    background: rgba(255,255,255,.85);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    border: 1px solid rgba(201,140,160,.4);
+    box-shadow: 0 4px 12px rgba(120,60,80,.18);
+    animation: bounceHintCorner 1.4s ease-in-out infinite;
+  }
+  .scroll-hint::after{ content:"⌄"; font-size:1.4rem; line-height:1; margin-top:-6px; font-family:'Quicksand', sans-serif; font-weight:700; }
+  .scroll-hint > *{ display:none; }
+  @keyframes bounceHintCorner{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(4px); } }
+
+  /* ---------- nothing hides under the sound button ----------
+     Headings at the top of each screen get enough room to clear the fixed
+     sound button in the top-right corner. */
+  .screen{ padding-top: calc(4.4rem + env(safe-area-inset-top)); }
+  .pause-heading, .quiz-progress{ padding: 0 2.6rem; }
+  /* buttons never sit on top of each other or squeeze text */
+  .choices{ row-gap: .9rem; }
+  .final-continue{ margin-top: 1.2rem; }
+  #screen-final{ padding-top: calc(4.2rem + env(safe-area-inset-top)); }
+  .btn-primary.envelope-next-btn{ padding: .6rem 1.4rem; font-size: .9rem; }   /* stays compact on the little letter */
+  .final-continue, #screen-final .screen-content{ padding-bottom: .5rem; }
 </style>
 </head>
 <body>
@@ -2371,9 +2497,10 @@ const questions = [
   {
     id: 3,
     prompt: "Alin ang lesser evil?",   // (b) EDIT: question text
+    choiceLayout: "landscape",         // wide cards stacked top/bottom instead of side by side
     choices: [
       { id: "a", image: "okra.jpg", label: "Okra" },         // (a)/(b) EDIT: photo + label
-      { id: "b", image: "ampalaya.jpg", label: "Ampalaya" }  // (a)/(b) EDIT: photo + label
+      { id: "b", image: "ampalaya.jpg", label: "Ampalaya", rotate: 90 }  // rotate: turns the photo sideways so it lies wide like the okra
     ],
     correctChoiceId: "b",              // "Ampalaya" is the correct answer
     correctTitle: "TAMA!",             // overrides the usual "You're correct!" headline
@@ -2871,6 +2998,13 @@ function updateScrollHint(){
     bar.style.width = (max > 0 ? Math.min(100, window.scrollY / max * 100) : 100) + '%';
     bar.classList.add('show');
   } else bar.classList.remove('show');
+  const quizActive = document.getElementById('screen-quiz-question').classList.contains('active');
+  if (quizActive){
+    const scrollable = document.body.scrollHeight > window.innerHeight + 60;
+    const nearEnd = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 40);
+    hint.classList.toggle('show', scrollable && !nearEnd);
+    return;
+  }
   if (!finalActive){ hint.classList.remove('show'); return; }
   const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 24);
   hint.classList.toggle('show', !nearBottom);
@@ -2911,13 +3045,17 @@ window.addEventListener('resize', updateScrollHint);
    down). */
 function tagPhotoShape(img){
   if (!img.naturalWidth) return;
+  if (typeof updateScrollHint === 'function') requestAnimationFrame(updateScrollHint);
   const r = img.naturalWidth / img.naturalHeight;
   img.dataset.orient = r > 1.12 ? 'landscape' : (r < 0.9 ? 'portrait' : 'square');
   // picture choices: very tall/wide photos are shown whole over a blurred copy
   const box = img.closest('.choice-img-box');
   if (box){
     box.style.setProperty('--src', `url("${img.currentSrc || img.src}")`);
-    box.classList.toggle('fit-whole', r > 1.25 || r < 0.78);
+    const shown = box.classList.contains('rot90') ? 1 / r : r;          // shape as displayed
+    const boxR = (box.clientWidth && box.clientHeight) ? box.clientWidth / box.clientHeight : .8;
+    const diff = shown / boxR;                                          // how far off the card's shape it is
+    box.classList.toggle('fit-whole', diff > 1.45 || diff < 0.69);
   }
 }
 document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') tagPhotoShape(e.target); }, true);
@@ -3086,7 +3224,7 @@ function renderQuestion(index){
   }
 
   const choicesWrap = document.createElement('div');
-  choicesWrap.className = 'choices';
+  choicesWrap.className = 'choices' + (q.choiceLayout === 'landscape' ? ' choices-landscape' : '');
 
   q.choices.forEach(choice => {
     let btn;
@@ -3095,7 +3233,7 @@ function renderQuestion(index){
       btn = document.createElement('button');
       btn.className = 'choice-picture-btn';
       const box = document.createElement('span');
-      box.className = 'choice-img-box';
+      box.className = 'choice-img-box' + (choice.rotate ? ' rot90' : '');
       const img = document.createElement('img');
       img.src = choice.image;
       img.alt = choice.label;
