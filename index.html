@@ -2088,7 +2088,7 @@
     <div class="bg-glow accent-quiz-intro"><span class="blob blob-1"></span><span class="blob blob-2"></span></div>
     <div class="screen-content">
       <!-- (a) SWAP/EDIT: the photo shown above the quiz-intro title -->
-      <img class="quiz-icon-image fade-in" src="ali3.jpg" alt="Allysa" loading="lazy" decoding="async">
+      <img class="quiz-icon-image fade-in" src="img/ali3.jpg" alt="Allysa" decoding="async">
       <h2 class="quiz-intro-title fade-in delay-1">Volume up, mag earphones ka muna! Basahon mong maray! HAHAHAH</h2>
       <div class="fade-in delay-2">
         <button class="btn-primary" id="btnStartQuiz">Start</button>
@@ -2121,7 +2121,7 @@
     <div class="screen-content">
       <h1 class="pause-heading fade-in" id="pauseHeading">Take a pause, and read this first.</h1>
       <div class="ribbon-frame fade-in delay-1">
-        <img class="ribbon-photo" id="pauseImage" src="" alt="" loading="lazy" decoding="async">
+        <img class="ribbon-photo" id="pauseImage" src="" alt="" decoding="async">
       </div>
       <div class="message-card fade-in delay-2">
         <div class="final-message">
@@ -2159,7 +2159,7 @@
       <div class="final-collage">
         <div class="polaroid polaroid-1">
           <div class="flip-card-inner">
-            <div class="flip-face flip-front"><img src="group1.jpeg" alt="us" loading="lazy" decoding="async" width="480" height="360"></div>
+            <div class="flip-face flip-front"><img src="img/group1.jpg" alt="us" decoding="async" width="480" height="360"></div>
             <div class="flip-face flip-back"><p>Wave 113C, you guys are important to me. Lalo na yang naka-red &lt;33</p></div>
           </div>
         </div>
@@ -2220,7 +2220,7 @@
     <div class="screen-content">
       <div class="goodbye-glow fade-in">
         <div class="goodbye-frame">
-          <img src="ali_cat.jpeg" alt="Allysa and her cat" loading="lazy" decoding="async">
+          <img src="img/ali_cat.jpg" alt="Allysa and her cat" decoding="async">
         </div>
         <span class="gb-sparkle gold" style="left:-6%;top:8%;font-size:2.40rem;animation-delay:0s">✦</span>
         <span class="gb-sparkle " style="left:92%;top:-4%;font-size:1.76rem;animation-delay:.5s">✦</span>
@@ -2269,10 +2269,10 @@
      further down for how they're preloaded.
      ======================================================= -->
 <audio id="sfxOpenLetter" src="open_letter.mp3" preload="auto"></audio>
-<audio id="bgmMain" src="background.mp3" loop preload="none"></audio>
-<audio id="bgmFinal" src="photograph.mp3" loop preload="none"></audio>
-<audio id="bgmPause" src="be.mp3" preload="none"></audio>
-<audio id="bgmPause2" src="spring.mp3" preload="none"></audio>
+<audio id="bgmMain" src="audio/background.m4a" data-fallback="background.mp3" loop preload="none"></audio>
+<audio id="bgmFinal" src="audio/photograph.m4a" data-fallback="photograph.mp3" loop preload="none"></audio>
+<audio id="bgmPause" src="audio/be.m4a" data-fallback="be.mp3" preload="none"></audio>
+<audio id="bgmPause2" src="audio/spring.m4a" data-fallback="spring.mp3" preload="none"></audio>
 <!-- fallback <audio> elements for clap/wrong — see the SOUND EFFECTS comment
      further down (playBufferedSfx()): the Web Audio decode is the normal
      path, these only get used when that fetch() can't run at all, e.g.
@@ -2401,7 +2401,7 @@ const HER_NAME = "Allysa";
    Point this at her actual photo filename once you have it.
    If the file doesn't exist yet, the cute placeholder above is shown instead.
    ===================================================================== */
-const HER_PHOTO_SRC = "ali.jpg";
+const HER_PHOTO_SRC = "img/ali.jpg";
 
 /* =====================================================================
    QUIZ QUESTIONS DATA
@@ -2466,7 +2466,7 @@ const HER_PHOTO_SRC = "ali.jpg";
 const questions = [
   {
     id: 1,
-    image: "reyal.jpeg",           // (a) SWAP/EDIT: the picture shown for this question
+    image: "img/reyal.jpg",           // (a) SWAP/EDIT: the picture shown for this question
     prompt: "Reyal or Fakeh?",      // (b) EDIT: question text
     choices: [
       { id: "a", label: "Reyal" },  // (b) EDIT: choice label
@@ -2483,15 +2483,15 @@ const questions = [
     id: 2,
     prompt: "Sino mas pogi?",         // (b) EDIT: question text
     choices: [
-      { id: "a", image: "caloy.jpeg", label: "Caloy" }, // (a)/(b) EDIT: photo + label
-      { id: "b", image: "chris.jpeg", label: "Chris" }  // (a)/(b) EDIT: photo + label
+      { id: "a", image: "img/caloy.jpg", label: "Caloy" }, // (a)/(b) EDIT: photo + label
+      { id: "b", image: "img/chris.jpg", label: "Chris" }  // (a)/(b) EDIT: photo + label
     ],
     // Trick question: correctChoiceId matches neither "a" nor "b" on purpose,
     // so picking either one always lands on the wrong-answer popup below —
     // no correctExplanation needed since that popup never fires.
     correctChoiceId: null,
     wrongExplanation: "SI MAR SYEMPRE!!", // (c) EDIT: the big reveal headline, whichever she picks
-    revealImage: "mar.jpeg",              // (a) SWAP/EDIT: the photo that pops up as the "real" answer
+    revealImage: "img/mar.jpg",              // (a) SWAP/EDIT: the photo that pops up as the "real" answer
     revealImageAlt: "Mar"
   },
   {
@@ -2499,8 +2499,8 @@ const questions = [
     prompt: "Alin ang lesser evil?",   // (b) EDIT: question text
     choiceLayout: "landscape",         // wide cards stacked top/bottom instead of side by side
     choices: [
-      { id: "a", image: "okra.jpg", label: "Okra" },         // (a)/(b) EDIT: photo + label
-      { id: "b", image: "ampalaya.jpg", label: "Ampalaya", rotate: 90 }  // rotate: turns the photo sideways so it lies wide like the okra
+      { id: "a", image: "img/okra.jpg", label: "Okra" },         // (a)/(b) EDIT: photo + label
+      { id: "b", image: "img/ampalaya.jpg", label: "Ampalaya", rotate: 90 }  // rotate: turns the photo sideways so it lies wide like the okra
     ],
     correctChoiceId: "b",              // "Ampalaya" is the correct answer
     correctTitle: "TAMA!",             // overrides the usual "You're correct!" headline
@@ -2510,7 +2510,7 @@ const questions = [
   },
   {
     id: 4,
-    image: "dottie.jpeg",            // (a) SWAP/EDIT: the picture shown for this question
+    image: "img/dottie.jpg",            // (a) SWAP/EDIT: the picture shown for this question
     prompt: "Who is this?",          // (b) EDIT: question text
     choices: [
       { id: "a", label: "Dottie" },  // (b) EDIT: choice label
@@ -2530,12 +2530,12 @@ const questions = [
     // screen shows; "startAt" is the point (seconds) its loop always skips
     // back to, so its intro never repeats.
     pauseBefore: {
-      image: "alii.jpeg",
+      image: "img/alii.jpg",
       imageAlt: "Allysa singing",
       note: "Allysa! Damn, even your name is sooooo attractive. You look so happy here. I was so happy as well! Lalo na nung kumakanta ka na, nawala na yung ihi ko kakapigil kasi ayaw ko ma-miss yung pag kanta mo hehehe. Sorry madali maihi pag kenekeleg cguro <33",
       bgm: { elementId: "bgmPause", startAt: 10 }
     },
-    images: ["sarah3.jpg", "reyal.jpeg", "naj.jpeg"], // (a) SWAP/EDIT: the photos in the equation, in order
+    images: ["img/sarah3.jpg", "img/reyal.jpg", "img/naj.jpg"], // (a) SWAP/EDIT: the photos in the equation, in order
     prompt: "",                        // no separate question text — the equation says it all
     choices: [
       { id: "a", label: "WTF?" },      // (b) EDIT: choice label
@@ -2545,7 +2545,7 @@ const questions = [
     // so picking either one always lands on the wrong-answer popup below.
     correctChoiceId: null,
     wrongExplanation: "Equals Ate Sarah Pro Max!", // (c) EDIT: the big reveal headline, whichever she picks
-    revealImage: "sarah.jpg",               // (a) SWAP/EDIT: the photo that pops up as the "real" answer
+    revealImage: "img/sarah.jpg",               // (a) SWAP/EDIT: the photo that pops up as the "real" answer
     revealImageAlt: "Sarah",
     correctAnswerReveal: "combine mo sindang tulo HAHAHAHAH"       // (c) EDIT: shown as the body text under the reveal photo
   },
@@ -2553,19 +2553,19 @@ const questions = [
     id: 6,
     prompt: "Sino mas pogi? (v2)",     // (b) EDIT: question text
     choices: [
-      { id: "a", image: "jc.jpeg", label: "JSayyy" },   // (a)/(b) EDIT: photo + label
-      { id: "b", image: "ced.jpeg", label: "Cedrick" }  // (a)/(b) EDIT: photo + label
+      { id: "a", image: "img/jc.jpg", label: "JSayyy" },   // (a)/(b) EDIT: photo + label
+      { id: "b", image: "img/ced.jpg", label: "Cedrick" }  // (a)/(b) EDIT: photo + label
     ],
     // Trick question: correctChoiceId matches neither "a" nor "b" on purpose,
     // so picking either one always lands on the wrong-answer popup below.
     correctChoiceId: null,
     wrongExplanation: "SI JOWA KO SYEMPRE! HAHAHAHAHA", // (c) EDIT: the big reveal headline, whichever she picks
-    revealImage: "mark.jpeg",              // (a) SWAP/EDIT: the photo that pops up as the "real" answer
+    revealImage: "img/mark.jpg",              // (a) SWAP/EDIT: the photo that pops up as the "real" answer
     revealImageAlt: "Mark"
   },
   {
     id: 7,
-    image: "darby.png",                // (a) SWAP/EDIT: the picture shown for this question
+    image: "img/darby.jpg",                // (a) SWAP/EDIT: the picture shown for this question
     prompt: "Did Darby deserve what happened to him???", // (b) EDIT: question text
     choices: [
       { id: "a", label: "YES!" },      // (b) EDIT: choice label — both choices lead to the same reveal below
@@ -2576,14 +2576,14 @@ const questions = [
     // wrongExplanation is the only text shown (no correctAnswerReveal body).
     correctChoiceId: null,
     wrongExplanation: "DESERVE NIYA YAN TALAGA", // (c) EDIT: the big reveal headline, whichever she picks
-    revealImage: "dasurb.png",         // (a) SWAP/EDIT: the photo that pops up as the "real" answer
+    revealImage: "img/dasurb.jpg",         // (a) SWAP/EDIT: the photo that pops up as the "real" answer
     revealImageAlt: "Darby",
     wrongEmoji: "😠",                   // (c) EDIT: angry burst instead of the usual laughing/eye-roll one
     forceCorrectSound: true            // both "YES!" and "YESSIR!" play the correct-answer sound
   },
   {
     id: 8,
-    image: "flower.jpeg",              // (a) SWAP/EDIT: the picture shown for this question
+    image: "img/flower.jpg",              // (a) SWAP/EDIT: the picture shown for this question
     prompt: "What's this?",            // (b) EDIT: question text
     choices: [
       { id: "a", label: "Flower" },           // (b) EDIT: choice label — both choices lead to the same reveal below
@@ -2594,7 +2594,7 @@ const questions = [
     // sound) below, with the same flower photo popping back up as the reveal.
     correctChoiceId: null,
     wrongExplanation: "IKAW ANG FLOWER!", // (c) EDIT: the big reveal headline, whichever she picks
-    revealImage: "flower.jpeg",           // (a) SWAP/EDIT: the photo that pops up as the "real" answer
+    revealImage: "img/flower.jpg",           // (a) SWAP/EDIT: the photo that pops up as the "real" answer
     revealImageAlt: "Flower",
     correctAnswerReveal: "Ganiyan ka sa eyes ko, yan kang red flower. Yung ibang mga babae yang bulok mga walang kowinta hehehe 💚💚💚", // (c) EDIT: shown as the body text under the reveal photo
     wrongEmoji: ["🌹","🌷","🌸","🌺","🌻","🌼"], // (c) EDIT: a mixed bouquet burst instead of the usual laughing/eye-roll one
@@ -2608,7 +2608,7 @@ const questions = [
     // instead of after it.
     pauseBefore: {
       heading: "Pause ulit, read this ulit hihi", // distinct from the default heading Question 5's pauseBefore uses, so the two pause screens don't read identically
-      image: "alii3.jpeg",
+      image: "img/alii3.jpg",
       imageAlt: "Allysa",
       note: "You look so precious here, Mae. Gusto ko na itulak si Shiela para sako ka na lang sumanday hahahahah. Kauyam inggit na inggit ako bwisit. Maski kargahon taka pa ay nako talagang ayos lang hahahahah. Sherkolang, unang beses ko yan tinignan pagkauwi, bagong gising ako. Di ko sadya naopen gallery ko tas may ganiyan palang picture mo. Tangina bumilis tibok ng puso ko ang hayop. Seryosong kakornihan beh. Para akong kinabahan na hindi ko maintindihan. Di ko maexplain. Pero later on, basahin mo kasi itatry ko naman siya iexplain. Brace yourself, you got some more readings to do <33",
       bgm: { elementId: "bgmPause2", startAt: 12 }
@@ -2641,8 +2641,8 @@ const questions = [
   //   id: 3,
   //   prompt: "Who is this?",
   //   choices: [
-  //     { id: "a", image: "bai.jpeg", label: "Bai" },
-  //     { id: "b", image: "chris.jpeg", label: "Chris" }
+  //     { id: "a", image: "img/bai.jpg", label: "Bai" },
+  //     { id: "b", image: "img/chris.jpg", label: "Chris" }
   //   ],
   //   correctChoiceId: "a",
   //   correctExplanation: "...",
@@ -3759,11 +3759,11 @@ let attachFinalPhotoPreview; // assigned below, used by renderFinalPhotoStack()
    append another { src, alt, backText } entry, nothing else needs to change.
    ===================================================================== */
 const FINAL_PHOTOS = [
-  { src: "ali2.jpg", alt: "Allysa", backText: "Wala akong pictures mo nag screenshot na lang ako sa ig and fb lol" },
-  { src: "ali4.jpg", alt: "Allysa", backText: "Oha, pak! Sakit batok pose yarn? HAHAHAH" },
-  { src: "ali5.png", alt: "Allysa", backText: "Taray talaga oh! Deyummmm! U with ur resting b*$%#h face! <33" },
-  { src: "ali6.png", alt: "Allysa", backText: "U look good af here! My heart pounded like brrt brrt boom boom ugh shet ugh shet <33" },
-  { src: "alii_young.png", alt: "Allysa", backText: "Cuteee! Sana matagal na tayo nagkakilala para nagkita na tayo ng mga bata pa tayo hayst. Kalungkot tuloy nakita mo ko matandang dugyot na huhu" }
+  { src: "img/ali2.jpg", alt: "Allysa", backText: "Wala akong pictures mo nag screenshot na lang ako sa ig and fb lol" },
+  { src: "img/ali4.jpg", alt: "Allysa", backText: "Oha, pak! Sakit batok pose yarn? HAHAHAH" },
+  { src: "img/ali5.jpg", alt: "Allysa", backText: "Taray talaga oh! Deyummmm! U with ur resting b*$%#h face! <33" },
+  { src: "img/ali6.jpg", alt: "Allysa", backText: "U look good af here! My heart pounded like brrt brrt boom boom ugh shet ugh shet <33" },
+  { src: "img/alii_young.jpg", alt: "Allysa", backText: "Cuteee! Sana matagal na tayo nagkakilala para nagkita na tayo ng mga bata pa tayo hayst. Kalungkot tuloy nakita mo ko matandang dugyot na huhu" }
 ];
 
 function renderFinalPhotoStack(){
@@ -3773,7 +3773,7 @@ function renderFinalPhotoStack(){
     card.className = 'flip-card';
     card.innerHTML = `
       <div class="flip-card-inner">
-        <div class="flip-face flip-front"><img src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async"></div>
+        <div class="flip-face flip-front"><img src="${photo.src}" alt="${photo.alt}" decoding="async"></div>
         <div class="flip-face flip-back"><p></p></div>
       </div>`;
     card.querySelector('.flip-back p').textContent = photo.backText; // textContent, not innerHTML — so a note with < or & in it can't break the markup
@@ -3800,31 +3800,83 @@ renderFinalPhotoStack();
 // below. clap.mp3/wrong.mp3 aren't <audio> tags (see SOUND EFFECTS comment
 // above) so they're preloaded separately via SFX_FILES, also in runLoadingScreen().
 const LOADING_IMAGES = [
-  HER_PHOTO_SRC, 'ali3.jpg',
-  'group1.jpeg', 'ali2.jpg', 'ali4.jpg', 'ali5.png', 'ali6.png', 'alii_young.png',
-  'reyal.jpeg', 'caloy.jpeg', 'chris.jpeg', 'mar.jpeg',
-  'okra.jpg', 'ampalaya.jpg',
-  'dottie.jpeg', 'naj.jpeg', 'sarah3.jpg', 'sarah.jpg',
-  'alii.jpeg', 'jc.jpeg', 'ced.jpeg', 'mark.jpeg', 'alii3.jpeg', 'ali_cat.jpeg'
+  HER_PHOTO_SRC, 'img/ali3.jpg',
+  'img/group1.jpg', 'img/ali2.jpg', 'img/ali4.jpg', 'img/ali5.jpg', 'img/ali6.jpg', 'img/alii_young.jpg',
+  'img/reyal.jpg', 'img/caloy.jpg', 'img/chris.jpg', 'img/mar.jpg',
+  'img/okra.jpg', 'img/ampalaya.jpg',
+  'img/dottie.jpg', 'img/naj.jpg', 'img/sarah3.jpg', 'img/sarah.jpg',
+  'img/alii.jpg', 'img/jc.jpg', 'img/ced.jpg', 'img/mark.jpg', 'img/alii3.jpg', 'img/ali_cat.jpg'
 ];
 
+// Every picture the site will ever show: the hand-kept list above PLUS
+// anything found in the quiz data, the final photo stack and the page
+// itself — so a newly added photo can never be forgotten here again.
+function collectAllImages(){
+  const set = new Set(LOADING_IMAGES);
+  const add = (v) => { if (typeof v === 'string' && /\.(jpe?g|png|webp|gif)$/i.test(v)) set.add(v); };
+  questions.forEach(q => {
+    add(q.image); add(q.revealImage);
+    (q.images || []).forEach(add);
+    (q.choices || []).forEach(c => add(c.image));
+    if (q.pauseBefore) add(q.pauseBefore.image);
+  });
+  if (PAUSE_AFTER_QUIZ) add(PAUSE_AFTER_QUIZ.image);
+  FINAL_PHOTOS.forEach(ph => add(ph.src));
+  document.querySelectorAll('img[src]').forEach(img => add(img.getAttribute('src')));
+  return [...set];
+}
+
+// Kept alive for the whole visit so the browser holds every photo ready
+// (downloaded AND decoded) — showing one later costs nothing.
+const PRELOADED_IMAGES = [];
 function preloadImage(src, onSettle){
   const img = new Image();
-  img.addEventListener('load', onSettle, { once: true });
-  img.addEventListener('error', onSettle, { once: true }); // missing file — don't hang, just move on
+  img.decoding = 'async';
+  PRELOADED_IMAGES.push(img);
+  let settled = false;
+  const done = () => { if (!settled){ settled = true; onSettle(); } };
+  img.addEventListener('load', () => {
+    // decode now, during loading, instead of the moment it first appears
+    if (img.decode) img.decode().then(done, done); else done();
+  }, { once: true });
+  img.addEventListener('error', done, { once: true }); // missing file — don't hang, just move on
   img.src = src;
 }
 
+// Old browsers that can't play the lighter .m4a songs fall back to the .mp3
+document.querySelectorAll('audio[data-fallback]').forEach(el => {
+  if (!el.canPlayType('audio/mp4')) el.src = el.dataset.fallback;
+});
+
 function preloadAudioFully(el, onSettle){
-  // Several tracks are deliberately left "preload=none" everywhere else on
-  // the page so they don't compete for bandwidth mid-quiz — flip them over
-  // just this once, here, to actually pull the whole file in up front.
-  if (el.preload !== 'auto'){ el.preload = 'auto'; el.load(); }
-  if (el.readyState >= 3){ onSettle(); return; } // HAVE_FUTURE_DATA+: already buffered enough
-  const done = () => { el.removeEventListener('canplaythrough', done); el.removeEventListener('error', done); onSettle(); };
-  el.addEventListener('canplaythrough', done, { once: true });
-  el.addEventListener('error', done, { once: true });
-  setTimeout(done, 8000); // a slow/huge track shouldn't strand her here either
+  let settled = false;
+  const done = () => { if (!settled){ settled = true; onSettle(); } };   // counts once, never twice
+
+  // Best case (the live website): download the WHOLE song into memory and
+  // play it from there — no buffering mid-quiz, ever.
+  const src = el.getAttribute('src');
+  if (window.fetch && window.URL && location.protocol !== 'file:' && src && !src.startsWith('blob:')){
+    fetch(src)
+      .then(r => { if (!r.ok) throw new Error('bad status'); return r.blob(); })
+      .then(blob => {
+        el.src = URL.createObjectURL(blob);
+        el.preload = 'auto';
+        el.load();
+        done();
+      })
+      .catch(() => streamFallback());
+    return;
+  }
+  streamFallback();
+
+  // Fallback (opened as a local file, or fetch failed): let the browser buffer it
+  function streamFallback(){
+    if (el.preload !== 'auto'){ el.preload = 'auto'; el.load(); }
+    if (el.readyState >= 4){ done(); return; } // HAVE_ENOUGH_DATA
+    el.addEventListener('canplaythrough', done, { once: true });
+    el.addEventListener('error', done, { once: true });
+    setTimeout(done, 20000); // a very slow connection shouldn't strand her forever
+  }
 }
 
 function runLoadingScreen(){
@@ -3834,7 +3886,8 @@ function runLoadingScreen(){
   const audioEls = Array.from(document.querySelectorAll('audio'));
   const sfxKeys = Object.keys(SFX_FILES);
   const flowerImgs = Object.values(FLOWER_SRC);     // the falling-flower pictures, so the shower starts instantly
-  const total = LOADING_IMAGES.length + flowerImgs.length + audioEls.length + sfxKeys.length + 1; // +1 for the web fonts
+  const allImages = collectAllImages();
+  const total = allImages.length + flowerImgs.length + audioEls.length + sfxKeys.length + 1; // +1 for the web fonts
   let settled = 0;
   let finished = false;
 
@@ -3860,7 +3913,7 @@ function runLoadingScreen(){
     requestAnimationFrame(() => startBtn.classList.add('show'));
   }
 
-  LOADING_IMAGES.forEach(src => preloadImage(src, bump));
+  allImages.forEach(src => preloadImage(src, bump));
   flowerImgs.forEach(src => preloadImage(src, bump));
   audioEls.forEach(el => preloadAudioFully(el, bump));
   sfxKeys.forEach(key => loadSfxBuffer(key, SFX_FILES[key], bump));
@@ -3873,7 +3926,7 @@ function runLoadingScreen(){
   // Safety net: however far things have gotten, never leave her stuck on
   // this screen for more than ~15s (a flaky connection, a browser that
   // never fires one of the events above, etc.) without a "Start" to tap.
-  setTimeout(finish, 15000);
+  setTimeout(finish, 45000);
 }
 runLoadingScreen();
 
