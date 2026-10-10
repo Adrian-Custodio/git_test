@@ -1,2 +1,8 @@
 letter.txt
 .claude/
+
+# unlocked source of the site: NEVER publish (it would bypass the password)
+index.src.html
+
+# private
+recovery-codes.txt
